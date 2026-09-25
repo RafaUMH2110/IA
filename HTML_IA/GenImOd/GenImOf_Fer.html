@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GenImOd — Generador de imágenes de moda mediante IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFF0EE; --surface:#FFFFFF; --ink:#1D1A24; --muted:#5F5D68; --line:#CFCFCA;
+  --accent:#B0174F; --accent-ink:#FFFFFF; --accent-soft:#F6DCE6;
+  --warn:#8A5200; --warn-bg:#FFF1D6; --ok:#2F6B4F; --ok-bg:#E1F1E8; --err:#A1261B; --err-bg:#FBE3DF;
+  --diff:#FFF1B8;
+  --serif:"Bodoni Moda","Didot","Bodoni 72","Times New Roman",serif;
+  --sans:"Work Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#16151A; --surface:#211F27; --ink:#EDEBF0; --muted:#A3A1AB; --line:#3A3842;
+  --accent:#F0588E; --accent-ink:#1D1A24; --accent-soft:#3D2230;
+  --warn:#F2B455; --warn-bg:#3A2C12; --ok:#7FD0A6; --ok-bg:#1B3327; --err:#FF9A8C; --err-bg:#3D1C18; --diff:#4A4010;
+}}
+:root[data-theme="dark"]{
+  --paper:#16151A; --surface:#211F27; --ink:#EDEBF0; --muted:#A3A1AB; --line:#3A3842;
+  --accent:#F0588E; --accent-ink:#1D1A24; --accent-soft:#3D2230;
+  --warn:#F2B455; --warn-bg:#3A2C12; --ok:#7FD0A6; --ok-bg:#1B3327; --err:#FF9A8C; --err-bg:#3D1C18; --diff:#4A4010;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--sans)}
+img{max-width:100%;display:block}
+a{color:var(--accent)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* Cabecera */
+header.mast{padding:28px 0 18px;border-bottom:2px solid var(--ink)}
+.mast h1{font-family:var(--serif);font-weight:700;font-size:clamp(3.2rem,11vw,7.5rem);line-height:.9;letter-spacing:-.035em;margin:0}
+.mast .sub{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;align-items:baseline;margin-top:10px}
+.mast .sub p{margin:0;font-family:var(--serif);font-style:italic;font-size:1.25rem}
+.flow{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:4px;font-size:.85rem;color:var(--muted)}
+.flow li+li::before{content:"›";margin-right:4px}
+.notice{font-size:.85rem;color:var(--muted);margin:12px 0 0}
+.notice summary{cursor:pointer}
+
+/* Rejilla principal */
+main.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;padding:24px 0}
+@media (max-width:900px){main.grid{grid-template-columns:1fr}}
+.col-result{position:sticky;top:calc(12px + env(safe-area-inset-top,0px));align-self:start}
+@media (max-width:900px){.col-result{position:static}}
+
+section.step{border-top:1px solid var(--line);padding:18px 0 22px}
+section.step:first-child{border-top:0;padding-top:0}
+.step h2{font-family:var(--serif);font-weight:500;font-size:1.6rem;margin:0 0 12px;display:flex;gap:12px;align-items:baseline}
+.step h2 .n{font-size:1rem;color:var(--accent);font-family:var(--sans);font-weight:600}
+label,.lbl{display:block;font-weight:500;font-size:.92rem;margin:12px 0 4px}
+.hint{font-size:.82rem;color:var(--muted);margin:4px 0 0}
+input[type=text],input[type=password],input[type=number],select,textarea{
+  width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 11px}
+textarea{resize:vertical;min-height:84px}
+textarea.mono{font-size:.9rem}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row > .grow{flex:1 1 200px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media (max-width:560px){.two{grid-template-columns:1fr}}
+
+button{font:inherit;font-size:.92rem;cursor:pointer;border-radius:6px;padding:8px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button:hover:not(:disabled){border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;padding:11px 18px}
+button.primary:hover:not(:disabled){filter:brightness(1.08);border-color:var(--accent)}
+button.small{padding:5px 10px;font-size:.84rem}
+.cost{font-size:.85rem;color:var(--muted)}
+.cost b{color:var(--ink);font-weight:600}
+
+/* Presets */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border-radius:999px;padding:7px 14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* Referencia */
+.refbox{display:flex;gap:12px;align-items:flex-start;margin-top:6px}
+.refbox img{width:88px;height:88px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+
+/* Mensajes */
+.msg{border-radius:6px;padding:10px 12px;font-size:.9rem;margin:10px 0 0}
+.msg.warn{background:var(--warn-bg);color:var(--warn)}
+.msg.err{background:var(--err-bg);color:var(--err)}
+.msg.ok{background:var(--ok-bg);color:var(--ok)}
+.msg:empty{display:none}
+
+/* Detalles */
+details.panel{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 14px;margin:14px 0}
+details.panel > summary{cursor:pointer;padding:12px 0;font-weight:600}
+details.panel[open] > summary{border-bottom:1px solid var(--line);margin-bottom:6px}
+details.panel .inner{padding-bottom:14px}
+.keyrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.keyrow input{flex:1 1 220px}
+.status{font-size:.8rem;padding:2px 8px;border-radius:999px;background:var(--paper);color:var(--muted)}
+.status.on{background:var(--ok-bg);color:var(--ok)}
+.radio{display:flex;gap:8px;align-items:flex-start;font-weight:400;margin:6px 0}
+.radio input{margin-top:5px}
+
+/* Resultado */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.canvas{aspect-ratio:3/4;display:grid;place-items:center;background:
+  repeating-linear-gradient(45deg,transparent 0 14px,color-mix(in srgb,var(--line) 35%,transparent) 14px 15px)}
+.canvas img{width:100%;height:100%;object-fit:contain}
+.canvas .empty{color:var(--muted);text-align:center;padding:24px;max-width:30ch}
+.stage .meta{padding:12px 14px;border-top:1px solid var(--line)}
+.stage .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ledger{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.ledger div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.ledger span{display:block;font-size:.78rem;color:var(--muted)}
+.ledger strong{font-family:var(--serif);font-size:1.25rem;font-weight:500}
+.spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:3s}}
+.transbox{background:var(--paper);border-radius:6px;padding:8px 10px;font-size:.88rem;margin-top:8px}
+.transbox:empty{display:none}
+
+/* Historial */
+section.history{border-top:2px solid var(--ink);padding:20px 0 40px}
+.history h2{font-family:var(--serif);font-weight:500;font-size:2rem;margin:0}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.card.sel{outline:2px solid var(--accent)}
+.card .thumb{aspect-ratio:1;background:var(--paper);display:grid;place-items:center;overflow:hidden}
+.card .thumb img{width:100%;height:100%;object-fit:cover}
+.card .body{padding:8px 10px;font-size:.8rem;flex:1}
+.card .body p{margin:0 0 4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .body .m{color:var(--muted)}
+.card .ops{display:flex;flex-wrap:wrap;gap:4px;padding:0 10px 10px}
+.card .ops button{padding:4px 8px;font-size:.78rem}
+.card label.pick{display:flex;gap:6px;align-items:center;margin:0;font-size:.8rem;font-weight:500}
+.cmpwrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table.cmp{border-collapse:collapse;width:100%;min-width:560px;font-size:.84rem}
+table.cmp th,table.cmp td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.cmp th{width:130px;color:var(--muted);font-weight:500}
+table.cmp tr.d td{background:var(--diff)}
+table.cmp img{max-height:180px}
+footer{border-top:1px solid var(--line);padding:18px 0 30px;font-size:.85rem;color:var(--muted)}
+footer ol{padding-left:20px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="mast">
+  <h1>GenImOd</h1>
+  <div class="sub">
+    <p>Generador de imágenes de moda mediante IA</p>
+    <ol class="flow" aria-label="Flujo de trabajo"><li>Idea</li><li>Claude</li><li>Prompt</li><li>FLUX</li><li>Imagen</li></ol>
+  </div>
+  <details class="notice">
+    <summary>Aviso de seguridad sobre las API keys</summary>
+    <p>La app funciona en el navegador. Las claves se guardan en este dispositivo (<code>localStorage</code>) y solo se envían al proveedor correspondiente (api.anthropic.com y fal.run). Es cómodo, pero no equivale a guardar un secreto en un servidor: no lo uses con claves institucionales ni en equipos compartidos, y borra la clave al terminar.</p>
+  </details>
+</header>
+
+<main class="grid">
+<div class="col-form">
+
+  <details class="panel" id="keysPanel">
+    <summary>Claves y conexión <span class="status" id="keysStatus">sin configurar</span></summary>
+    <div class="inner">
+      <span class="lbl">¿Qué claves quieres usar?</span>
+      <label class="radio"><input type="radio" name="mode" value="two" checked> <span><b>Claude + fal.ai</b> — dos claves. Permite caché de instrucciones y coste exacto del texto.</span></label>
+      <label class="radio"><input type="radio" name="mode" value="fal"> <span><b>Solo fal.ai</b> — una clave. El texto se genera con el servicio de LLM de fal.ai.</span></label>
+
+      <div id="anthRow">
+        <label for="kAnth">API key de Anthropic</label>
+        <div class="keyrow">
+          <input id="kAnth" type="password" autocomplete="off" placeholder="sk-ant-…">
+          <button type="button" data-save="anth">Guardar</button>
+          <button type="button" data-show="kAnth">Mostrar</button>
+          <button type="button" data-del="anth">Borrar</button>
+          <span class="status" id="stAnth">sin guardar</span>
+        </div>
+      </div>
+      <label for="kFal">API key de fal.ai</label>
+      <div class="keyrow">
+        <input id="kFal" type="password" autocomplete="off" placeholder="xxxxxxxx:xxxxxxxx">
+        <button type="button" data-save="fal">Guardar</button>
+        <button type="button" data-show="kFal">Mostrar</button>
+        <button type="button" data-del="fal">Borrar</button>
+        <span class="status" id="stFal">sin guardar</span>
+      </div>
+      <p class="hint">La validez de cada clave la confirma el proveedor en la primera llamada.</p>
+    </div>
+  </details>
+
+  <section class="step">
+    <h2><span class="n">1</span> Estilo e idea</h2>
+    <span class="lbl" id="presetLbl">Estilo</span>
+    <div class="chips" id="presets" role="group" aria-labelledby="presetLbl"></div>
+    <p class="hint" id="presetHint"></p>
+
+    <label for="idea">Idea inicial</label>
+    <textarea id="idea" placeholder="Ej.: abrigo largo de lana color camel con cinturón, para una campaña de otoño en la ciudad"></textarea>
+
+    <span class="lbl">Imagen de referencia <span class="cost">(opcional)</span></span>
+    <div class="refbox">
+      <img id="refPrev" alt="Imagen de referencia" hidden>
+      <div class="grow">
+        <input id="refFile" type="file" accept="image/*" class="sr">
+        <div class="row">
+          <button type="button" id="refPick">Subir boceto o foto</button>
+          <button type="button" id="refDel" hidden>Quitar</button>
+        </div>
+        <div id="strengthRow" hidden>
+          <label for="strength">Cuánto se aleja de la referencia: <b id="strengthV">0,85</b></label>
+          <input id="strength" type="range" min="0.3" max="0.98" step="0.01" value="0.85" style="width:100%">
+          <p class="hint">Valores bajos respetan más la referencia. Con referencia se usa FLUX dev imagen-a-imagen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">2</span> Prompt</h2>
+    <div class="row">
+      <button type="button" id="btnImprove">Mejorar prompt con IA</button>
+      <span class="cost" id="costImprove"></span>
+    </div>
+    <label for="prompt">Prompt en inglés (puedes editarlo o escribirlo tú)</label>
+    <textarea id="prompt" class="mono" rows="5" placeholder="Pulsa «Mejorar prompt con IA» o escribe aquí tu propio prompt."></textarea>
+    <div class="transbox" id="trans"></div>
+    <div class="row" style="margin-top:8px">
+      <button type="button" class="small" id="btnCopy">Copiar prompt</button>
+      <button type="button" class="small" id="btnDlPrompt">Descargar prompt</button>
+      <button type="button" class="small" id="btnClearPrompt">Borrar</button>
+    </div>
+    <div class="msg" id="msgPrompt"></div>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">3</span> Imagen</h2>
+    <div class="two">
+      <div>
+        <label for="quality">Calidad</label>
+        <select id="quality"></select>
+      </div>
+      <div>
+        <label for="format">Formato</label>
+        <select id="format"></select>
+      </div>
+    </div>
+    <label class="radio"><input type="checkbox" id="draft" checked> <span><b>Borrador</b> (baja resolución, mucho más barato). Cuando te guste, pide la versión final.</span></label>
+    <label for="seed">Semilla</label>
+    <div class="row">
+      <input id="seed" type="number" min="0" max="2147483647" placeholder="Vacía = aleatoria" class="grow">
+      <button type="button" id="btnDice" title="Semilla aleatoria">Aleatoria</button>
+    </div>
+    <p class="hint">Con la misma semilla y el mismo prompt obtienes la misma imagen. Fíjala para cambiar una sola variable.</p>
+    <div class="row" style="margin-top:14px">
+      <button type="button" class="primary" id="btnGen">Generar imagen</button>
+      <span class="cost" id="costGen"></span>
+    </div>
+    <p class="hint" id="genHint"></p>
+  </section>
+
+  <details class="panel" id="adv">
+    <summary>Opciones avanzadas</summary>
+    <div class="inner">
+      <div class="two">
+        <div id="claudeModelBox">
+          <label for="claudeModel">Modelo de texto (Claude)</label>
+          <select id="claudeModel"></select>
+          <input id="claudeCustom" type="text" placeholder="Identificador del modelo" hidden style="margin-top:6px">
+        </div>
+        <div id="falLlmBox" hidden>
+          <label for="falLlm">Modelo de texto en fal.ai</label>
+          <input id="falLlm" type="text" list="falLlmList">
+          <datalist id="falLlmList">
+            <option value="anthropic/claude-3-5-haiku"><option value="anthropic/claude-3.5-sonnet">
+            <option value="google/gemini-flash-1.5"><option value="openai/gpt-4o-mini">
+          </datalist>
+        </div>
+        <div>
+          <label for="maxTok">Máximo de tokens de respuesta</label>
+          <input id="maxTok" type="number" min="100" max="4096" step="50" value="500">
+        </div>
+      </div>
+      <label class="radio"><input type="checkbox" id="optTrans" checked> <span>Mostrar traducción del prompt al castellano (añade unos 100 tokens de salida).</span></label>
+      <label class="radio" id="cacheRow"><input type="checkbox" id="optCache" checked> <span>Cachear las instrucciones del sistema. Solo se activa si superan el mínimo del modelo (1.024 a 4.096 tokens); entonces cada repetición cobra esa parte a una décima parte del precio.</span></label>
+
+      <label for="sys">Instrucciones del sistema</label>
+      <textarea id="sys" class="mono" rows="9"></textarea>
+      <div class="row" style="margin-top:6px">
+        <button type="button" class="small" id="btnSysReset">Restaurar las del estilo</button>
+      </div>
+
+      <div class="two">
+        <div>
+          <label for="steps">Pasos de inferencia</label>
+          <input id="steps" type="number" min="1" max="50">
+          <p class="hint" id="stepsHint"></p>
+        </div>
+        <div>
+          <label for="tol">Tolerancia del filtro (solo FLUX pro)</label>
+          <select id="tol"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select>
+          <p class="hint">Más alto = más permisivo. Con alumnos, usa el valor más bajo que funcione.</p>
+        </div>
+      </div>
+
+      <span class="lbl">Configuración para compartir</span>
+      <div class="row">
+        <button type="button" class="small" id="btnExport">Exportar configuración (.json)</button>
+        <button type="button" class="small" id="btnImport">Importar configuración</button>
+        <input type="file" id="importFile" accept="application/json,.json" class="sr">
+      </div>
+      <p class="hint">Incluye estilo, instrucciones, modelos y parámetros. Nunca incluye las API keys.</p>
+      <div class="msg" id="msgCfg"></div>
+    </div>
+  </details>
+</div>
+
+<aside class="col-result" aria-live="polite">
+  <div class="stage">
+    <div class="canvas" id="canvas"><p class="empty">La imagen aparecerá aquí. Empieza por el estilo y la idea.</p></div>
+    <div class="meta" id="resMeta" hidden>
+      <div class="cost" id="resInfo"></div>
+      <div class="msg" id="msgImg"></div>
+      <div class="actions">
+        <button type="button" class="small" id="btnDl">Descargar PNG</button>
+        <button type="button" class="small" id="btnVar">Variación</button>
+        <button type="button" class="small" id="btnFinal">Versión final</button>
+        <button type="button" class="small" id="btnFix">Fijar esta semilla</button>
+      </div>
+    </div>
+  </div>
+  <div class="msg" id="msgGen"></div>
+  <div class="ledger">
+    <div><span>Última</span><strong id="cLast">$0</strong></div>
+    <div><span>Esta sesión</span><strong id="cSess">$0</strong></div>
+    <div><span>Acumulado</span><strong id="cTotal">$0</strong></div>
+  </div>
+  <p class="hint">Costes orientativos en dólares según las tarifas del código (<code>PRICES</code>). <button type="button" class="small" id="btnResetTotal">Poner a cero el acumulado</button></p>
+</aside>
+</main>
+
+<section class="history">
+  <div class="row" style="justify-content:space-between">
+    <h2>Historial</h2>
+    <div class="row">
+      <span class="cost" id="hCount">0 generaciones</span>
+      <button type="button" class="small" id="btnCmp" disabled>Comparar selección</button>
+      <button type="button" class="small" id="btnUnsel">Quitar selección</button>
+      <button type="button" class="small" id="btnDlPrompts">Descargar prompts (.txt)</button>
+      <button type="button" class="small" id="btnWipe">Vaciar historial</button>
+    </div>
+  </div>
+  <p class="hint">Cada generación se guarda en este navegador con su idea, instrucciones, prompt, parámetros, semilla e imagen (sin API keys). Selecciona de 2 a 4 para compararlas.</p>
+  <div class="hgrid" id="hgrid"></div>
+  <div id="cmpBox" hidden>
+    <div class="row" style="justify-content:space-between;margin-top:18px">
+      <h3 style="font-family:var(--serif);font-weight:500;font-size:1.4rem;margin:0">Comparación</h3>
+      <button type="button" class="small" id="btnCmpClose">Cerrar comparación</button>
+    </div>
+    <p class="hint">Los valores que difieren aparecen resaltados.</p>
+    <div class="cmpwrap"><table class="cmp" id="cmpTable"></table></div>
+  </div>
+</section>
+
+<footer>
+  <p><b>Cómo trabajar con GenImOd.</b> Elige un estilo y escribe la idea. Mejora el prompt con IA, revísalo y genera un borrador barato. Cuando una imagen te guste, fija su semilla y pide variaciones o la versión final. La imagen depende de la idea, las instrucciones, el modelo de texto, el modelo de imagen, los parámetros y la semilla: cambia una sola cosa cada vez para ver su efecto.</p>
+  <p>Rafael Puerto (<a href="mailto:r.puerto@umh.es">r.puerto@umh.es</a>)</p>
+</footer>
+</div>
+
+<script>
+/* ============ Configuración editable ============ */
+// Tarifas orientativas en USD. Revísalas en las páginas de precios de cada proveedor.
+const PRICES = {
+  claude: { // por millón de tokens
+    'claude-haiku-4-5-20251001': {in:1, out:5},
+    'claude-sonnet-5': {in:3, out:15},
+    'claude-opus-5-5': {in:5, out:25},
+    _default: {in:3, out:15}
+  },
+  falLlmPerCall: 0.001,       // estimación por llamada al LLM de fal.ai
+  flux: {                      // por megapíxel
+    'fal-ai/flux/schnell': 0.003,
+    'fal-ai/flux/dev': 0.025,
+    'fal-ai/flux-pro/v1.1': 0.04,
+    'fal-ai/flux/dev/image-to-image': 0.03
+  }
+};
+const CLAUDE_MODELS = [
+  {id:'claude-haiku-4-5-20251001', label:'Rápido y barato (Haiku 4.5)'},
+  {id:'claude-sonnet-5', label:'Equilibrado (Sonnet 5)'},
+  {id:'claude-opus-5-5', label:'Máxima calidad (Opus 5.5)'},
+  {id:'custom', label:'Otro (escribir identificador)'}
+];
+const FLUX_MODELS = [
+  {id:'fal-ai/flux/schnell', label:'Rápida y barata (FLUX schnell)', steps:4, max:12},
+  {id:'fal-ai/flux/dev', label:'Equilibrada (FLUX dev)', steps:28, max:50},
+  {id:'fal-ai/flux-pro/v1.1', label:'Máxima (FLUX pro 1.1)', steps:null}
+];
+const IMG2IMG = 'fal-ai/flux/dev/image-to-image';
+const SIZES = {
+  portrait_4_3:[768,1024,'Retrato 3:4'], portrait_16_9:[576,1024,'Retrato 9:16'],
+  square_hd:[1024,1024,'Cuadrado 1:1'], landscape_4_3:[1024,768,'Apaisado 4:3'], landscape_16_9:[1024,576,'Apaisado 16:9']
+};
+const SYS_BASE = `Eres director de arte especializado en fotografía e ilustración de moda. Recibes una idea en español y la conviertes en un prompt en inglés para el modelo de imagen FLUX.
+Reglas:
+- Describe prenda, tejido, color, corte, modelo o soporte, pose, encuadre, iluminación, fondo y estilo fotográfico o ilustrativo.
+- Máximo 90 palabras, en una sola línea, sin listas, comillas ni explicaciones.
+- No incluyas texto, logotipos ni marcas reales en la imagen.
+- Evita contenido sexualizado: ropa y pose deben ser aptas para un aula.
+Estilo: `;
+const PRESETS = [
+  {id:'editorial', name:'Editorial de revista', size:'portrait_4_3', style:'fotografía editorial de moda para revista; luz cuidada de estudio o exterior, pose expresiva, estilismo completo, grano fotográfico sutil, cámara de medio formato.'},
+  {id:'catalogo', name:'Catálogo online', size:'portrait_4_3', style:'catálogo de comercio electrónico; fondo liso neutro, luz uniforme sin sombras duras, prenda completa, centrada y con color y textura fieles, modelo en pose neutra.'},
+  {id:'figurin', name:'Figurín', size:'portrait_16_9', style:'ilustración de figurín de moda; figura estilizada de cuerpo entero, trazo de lápiz o rotulador con aguadas de acuarela, fondo de papel, sin texto legible.'},
+  {id:'street', name:'Streetwear', size:'portrait_4_3', style:'lookbook de moda urbana; fotografía callejera con luz natural, entorno de ciudad, actitud espontánea.'},
+  {id:'pasarela', name:'Pasarela', size:'portrait_16_9', style:'desfile de alta costura; modelo caminando por la pasarela, focos de desfile, público desenfocado, énfasis en volumen y movimiento del tejido.'},
+  {id:'flatlay', name:'Bodegón de producto', size:'square_hd', style:'flat lay de producto; prendas y complementos vistos desde arriba sobre una superficie, composición ordenada, sombras suaves, sin personas.'}
+];
+
+/* ============ Utilidades ============ */
+const $ = s => document.querySelector(s);
+const ls = {
+  get(k,d=null){try{const v=localStorage.getItem('genimod.'+k);return v===null?d:v}catch{return d}},
+  set(k,v){try{localStorage.setItem('genimod.'+k,v)}catch{}},
+  del(k){try{localStorage.removeItem('genimod.'+k)}catch{}}
+};
+const money = v => v<=0 ? '$0' : (v<0.01 ? '$'+v.toFixed(4) : '$'+v.toFixed(3));
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function msg(el, text, kind='warn'){ el.className='msg '+kind; el.textContent=text||''; }
+function download(name, blobOrText, type='text/plain'){
+  const b = blobOrText instanceof Blob ? blobOrText : new Blob([blobOrText],{type:type+';charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+}
+const randSeed = () => Math.floor(Math.random()*2147483647);
+
+/* ============ Estado ============ */
+const state = {
+  preset: ls.get('preset','editorial'),
+  sysDirty: false,
+  ref: null,            // dataURL de referencia
+  translation: '',
+  current: null,        // última generación mostrada
+  sess: 0,
+  total: parseFloat(ls.get('total','0'))||0,
+  selected: new Set()
+};
+
+/* ============ Claves ============ */
+const keyInputs = {anth:$('#kAnth'), fal:$('#kFal')};
+function mode(){ return document.querySelector('input[name=mode]:checked').value; }
+function key(k){ return ls.get('key.'+k,''); }
+function refreshKeys(){
+  for(const k of ['anth','fal']){
+    const has = !!key(k); const st = $(k==='anth'?'#stAnth':'#stFal');
+    st.textContent = has?'guardada':'sin guardar'; st.classList.toggle('on',has);
+    if(has && !keyInputs[k].value) keyInputs[k].value = key(k);
+  }
+  const m = mode();
+  $('#anthRow').hidden = m==='fal';
+  $('#claudeModelBox').hidden = m==='fal';
+  $('#falLlmBox').hidden = m!=='fal';
+  $('#cacheRow').hidden = m==='fal';
+  const ok = m==='fal' ? !!key('fal') : (!!key('fal') && !!key('anth'));
+  const ks = $('#keysStatus'); ks.textContent = ok?'lista':'sin configurar'; ks.classList.toggle('on',ok);
+  if(!ok) $('#keysPanel').open = true;
+  updateUI();
+}
+document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.save, v=keyInputs[k].value.trim(); if(!v) return;
+  ls.set('key.'+k,v); refreshKeys();
+});
+document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.del; ls.del('key.'+k); keyInputs[k].value=''; refreshKeys();
+});
+document.querySelectorAll('[data-show]').forEach(b=>b.onclick=()=>{
+  const i=$('#'+b.dataset.show); const show=i.type==='password'; i.type=show?'text':'password'; b.textContent=show?'Ocultar':'Mostrar';
+});
+document.querySelectorAll('input[name=mode]').forEach(r=>r.onchange=()=>{ls.set('mode',mode()); refreshKeys();});
+
+/* ============ Presets e instrucciones ============ */
+function presetObj(id=state.preset){ return PRESETS.find(p=>p.id===id)||PRESETS[0]; }
+function presetSys(p){ return SYS_BASE + p.style; }
+function renderPresets(){
+  const box=$('#presets'); box.innerHTML='';
+  PRESETS.forEach(p=>{
+    const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=p.name;
+    b.setAttribute('aria-pressed', p.id===state.preset);
+    b.onclick=()=>selectPreset(p.id); box.appendChild(b);
+  });
+  $('#presetHint').textContent = 'Formato sugerido: '+SIZES[presetObj().size][2]+'.';
+}
+function selectPreset(id){
+  if(state.sysDirty && !confirm('Has editado las instrucciones del sistema. ¿Sustituirlas por las del nuevo estilo?')) { state.preset=id; ls.set('preset',id); renderPresets(); return; }
+  state.preset=id; ls.set('preset',id);
+  const p=presetObj(); $('#sys').value=presetSys(p); state.sysDirty=false; ls.del('sys');
+  $('#format').value=p.size; renderPresets(); updateUI();
+}
+$('#sys').oninput=()=>{ state.sysDirty=true; ls.set('sys',$('#sys').value); updateUI(); };
+$('#btnSysReset').onclick=()=>{ $('#sys').value=presetSys(presetObj()); state.sysDirty=false; ls.del('sys'); updateUI(); };
+
+/* ============ Selectores ============ */
+function fillSelects(){
+  $('#claudeModel').innerHTML = CLAUDE_MODELS.map(m=>`<option value="${m.id}">${esc(m.label)}</option>`).join('');
+  $('#quality').innerHTML = FLUX_MODELS.map(m=>`<option value="${m.id}">${esc(m.label)}</option>`).join('');
+  $('#format').innerHTML = Object.entries(SIZES).map(([k,v])=>`<option value="${k}">${v[2]}</option>`).join('');
+}
+function claudeId(){ const v=$('#claudeModel').value; return v==='custom' ? ($('#claudeCustom').value.trim()||'claude-haiku-4-5-20251001') : v; }
+$('#claudeModel').onchange=()=>{ $('#claudeCustom').hidden = $('#claudeModel').value!=='custom'; persist(); updateUI(); };
+$('#quality').onchange=()=>{ const m=FLUX_MODELS.find(x=>x.id===$('#quality').value); if(m.steps) $('#steps').value=m.steps; persist(); updateUI(); };
+['#format','#draft','#maxTok','#steps','#tol','#optTrans','#optCache','#claudeCustom','#falLlm','#seed','#strength'].forEach(s=>{
+  $(s).addEventListener('input',()=>{persist();updateUI();}); $(s).addEventListener('change',()=>{persist();updateUI();});
+});
+$('#idea').oninput=()=>{ ls.set('idea',$('#idea').value); updateUI(); };
+$('#prompt').oninput=()=>{ updateUI(); };
+$('#btnDice').onclick=()=>{ $('#seed').value=randSeed(); persist(); };
+
+/* ============ Parámetros de imagen y costes ============ */
+function imageModelId(){ return state.ref ? IMG2IMG : $('#quality').value; }
+function dims(draft=$('#draft').checked){
+  const [w,h]=SIZES[$('#format').value];
+  if(!draft) return [w,h];
+  const s=512/Math.max(w,h); return [Math.round(w*s/16)*16, Math.round(h*s/16)*16];
+}
+function imageCost(model, w, h){ return (PRICES.flux[model]??0.03) * (w*h/1e6); }
+function sysFull(){
+  const out = $('#optTrans').checked
+    ? '\n\nResponde exactamente con este formato:\nPROMPT: <prompt en inglés>\nTRADUCCIÓN: <traducción fiel del prompt al castellano>'
+    : '\n\nResponde exactamente con este formato:\nPROMPT: <prompt en inglés>';
+  return $('#sys').value.trim() + out;
+}
+function textCostEstimate(){
+  if(mode()==='fal') return PRICES.falLlmPerCall;
+  const p = PRICES.claude[claudeId()]||PRICES.claude._default;
+  const inTok = (sysFull().length + $('#idea').value.length)/3.5 + 20;
+  const outTok = Math.min(+$('#maxTok').value||500, $('#optTrans').checked?220:120);
+  return (p.in*inTok + p.out*outTok)/1e6;
+}
+function textCostActual(model, u){
+  const p = PRICES.claude[model]||PRICES.claude._default;
+  return (p.in*(u.input_tokens||0) + p.in*1.25*(u.cache_creation_input_tokens||0) + p.in*0.1*(u.cache_read_input_tokens||0) + p.out*(u.output_tokens||0))/1e6;
+}
+function addCost(v){
+  state.sess+=v; state.total+=v; ls.set('total',String(state.total));
+  $('#cLast').textContent=money(v); $('#cSess').textContent=money(state.sess); $('#cTotal').textContent=money(state.total);
+}
+$('#btnResetTotal').onclick=()=>{ state.total=0; ls.set('total','0'); $('#cTotal').textContent='$0'; };
+
+/* ============ Actualizar interfaz ============ */
+function keysReadyText(){ return mode()==='fal' ? !!key('fal') : (!!key('fal')&&!!key('anth')); }
+function updateUI(){
+  const idea=$('#idea').value.trim(), prompt=$('#prompt').value.trim();
+  const textOk = keysReadyText();
+  $('#btnImprove').disabled = !(textOk && idea) || state.busy;
+  $('#costImprove').innerHTML = idea ? 'Coste estimado <b>'+money(textCostEstimate())+'</b>' : '';
+  const needText = !prompt;
+  const genOk = !!key('fal') && (prompt || (idea && textOk)) && !state.busy;
+  $('#btnGen').disabled = !genOk;
+  const [w,h]=dims(); const model=imageModelId();
+  const ic = imageCost(model,w,h) + (needText && idea ? textCostEstimate() : 0);
+  $('#costGen').innerHTML = (prompt||idea) ? `≈ <b>${money(ic)}</b> · ${w}×${h}` : '';
+  $('#genHint').textContent = !key('fal') ? 'Guarda la clave de fal.ai para generar.' :
+    (!prompt && !idea) ? 'Escribe una idea o un prompt.' :
+    (needText ? 'Sin prompt: primero se mejorará la idea con IA y después se generará la imagen.' : '');
+  const fm = FLUX_MODELS.find(x=>x.id===$('#quality').value);
+  const stepsEl=$('#steps');
+  if(state.ref){ stepsEl.disabled=false; stepsEl.max=50; $('#stepsHint').textContent='Imagen-a-imagen (FLUX dev): 20–40 pasos.'; }
+  else if(fm.steps){ stepsEl.disabled=false; stepsEl.max=fm.max; $('#stepsHint').textContent=`Recomendado ${fm.steps} (máx. ${fm.max}).`; }
+  else { stepsEl.disabled=true; $('#stepsHint').textContent='FLUX pro fija sus propios pasos.'; }
+  $('#quality').disabled = !!state.ref;
+}
+
+/* ============ Persistencia de la configuración ============ */
+function configObj(){
+  return { app:'GenImOd', version:2, mode:mode(), preset:state.preset, system:$('#sys').value, sysDirty:state.sysDirty,
+    claudeModel:$('#claudeModel').value, claudeCustom:$('#claudeCustom').value, falLlm:$('#falLlm').value,
+    maxTokens:+$('#maxTok').value, translate:$('#optTrans').checked, cache:$('#optCache').checked,
+    quality:$('#quality').value, format:$('#format').value, draft:$('#draft').checked, steps:+$('#steps').value,
+    tolerance:$('#tol').value, strength:+$('#strength').value };
+}
+function persist(){ ls.set('config', JSON.stringify(configObj())); $('#strengthV').textContent=(+$('#strength').value).toFixed(2).replace('.',','); }
+function applyConfig(c){
+  if(!c) return;
+  if(c.mode) document.querySelector(`input[name=mode][value="${c.mode}"]`).checked=true;
+  if(c.preset && PRESETS.some(p=>p.id===c.preset)) state.preset=c.preset;
+  if(typeof c.system==='string' && c.system.trim()){ $('#sys').value=c.system; state.sysDirty=!!c.sysDirty; }
+  else { $('#sys').value=presetSys(presetObj()); state.sysDirty=false; }
+  if(c.claudeModel && [...$('#claudeModel').options].some(o=>o.value===c.claudeModel)) $('#claudeModel').value=c.claudeModel;
+  if(c.claudeCustom!=null) $('#claudeCustom').value=c.claudeCustom;
+  $('#claudeCustom').hidden = $('#claudeModel').value!=='custom';
+  if(c.falLlm) $('#falLlm').value=c.falLlm;
+  if(c.maxTokens) $('#maxTok').value=c.maxTokens;
+  if(c.translate!=null) $('#optTrans').checked=c.translate;
+  if(c.cache!=null) $('#optCache').checked=c.cache;
+  if(c.quality && FLUX_MODELS.some(m=>m.id===c.quality)) $('#quality').value=c.quality;
+  if(c.format && SIZES[c.format]) $('#format').value=c.format;
+  if(c.draft!=null) $('#draft').checked=c.draft;
+  if(c.steps) $('#steps').value=c.steps;
+  if(c.tolerance) $('#tol').value=c.tolerance;
+  if(c.strength) $('#strength').value=c.strength;
+  ls.set('preset',state.preset); renderPresets(); persist(); refreshKeys();
+}
+$('#btnExport').onclick=()=>download('genimod-config.json', JSON.stringify(configObj(),null,2),'application/json');
+$('#btnImport').onclick=()=>$('#importFile').click();
+$('#importFile').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{ const c=JSON.parse(await f.text()); if(c.app!=='GenImOd') throw new Error();
+    applyConfig(c); msg($('#msgCfg'),'Configuración importada.','ok');
+  }catch{ msg($('#msgCfg'),'El archivo no es una configuración de GenImOd válida.','err'); }
+  e.target.value='';
+};
+
+/* ============ Imagen de referencia ============ */
+$('#refPick').onclick=()=>$('#refFile').click();
+$('#refFile').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{
+    const bmp=await createImageBitmap(f); const s=Math.min(1,1024/Math.max(bmp.width,bmp.height));
+    const c=document.createElement('canvas'); c.width=Math.round(bmp.width*s); c.height=Math.round(bmp.height*s);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    state.ref=c.toDataURL('image/jpeg',0.9);
+    $('#refPrev').src=state.ref; $('#refPrev').hidden=false; $('#refDel').hidden=false; $('#strengthRow').hidden=false;
+    $('#steps').value=28; updateUI();
+  }catch{ alert('No se ha podido leer la imagen.'); }
+  e.target.value='';
+};
+$('#refDel').onclick=()=>{ state.ref=null; $('#refPrev').hidden=true; $('#refDel').hidden=true; $('#strengthRow').hidden=true;
+  const m=FLUX_MODELS.find(x=>x.id===$('#quality').value); if(m.steps) $('#steps').value=m.steps; updateUI(); };
+
+/* ============ Paso 2: mejorar prompt ============ */
+function parseLLM(text){
+  const t=text.trim();
+  const m=t.match(/PROMPT:\s*([\s\S]*?)(?:\n\s*TRADUCCI[ÓO]N:\s*([\s\S]*))?$/i);
+  if(m) return {prompt:m[1].trim().replace(/^"|"$/g,''), trans:(m[2]||'').trim()};
+  return {prompt:t, trans:''};
+}
+async function improve(){
+  const idea=$('#idea').value.trim(); if(!idea) return null;
+  const user = 'Idea: '+idea + (state.ref ? '\n(Hay una imagen de referencia: el prompt debe describir la prenda y el estilo deseados de forma coherente con ella.)' : '');
+  const sys = sysFull(); const maxT = Math.max(100, +$('#maxTok').value||500);
+  let text, cost, info='';
+  if(mode()==='fal'){
+    const r = await fetch('https://fal.run/fal-ai/any-llm',{method:'POST',
+      headers:{'Authorization':'Key '+key('fal'),'Content-Type':'application/json'},
+      body:JSON.stringify({model:$('#falLlm').value.trim()||'anthropic/claude-3-5-haiku', system_prompt:sys, prompt:user})});
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error('fal.ai (texto): '+(d.detail?.[0]?.msg||d.detail||d.message||r.status));
+    text = d.output||''; cost = PRICES.falLlmPerCall;
+  } else {
+    const model = claudeId();
+    const body = {model, max_tokens:maxT, messages:[{role:'user',content:user}],
+      system: $('#optCache').checked ? [{type:'text',text:sys,cache_control:{type:'ephemeral'}}] : sys};
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+      'x-api-key':key('anth'),'anthropic-version':'2023-06-01','content-type':'application/json',
+      'anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error('Anthropic: '+(d.error?.message||r.status));
+    text = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    cost = textCostActual(model, d.usage||{});
+    const u=d.usage||{};
+    info = `${u.input_tokens||0} tokens de entrada, ${u.output_tokens||0} de salida` + (u.cache_read_input_tokens ? `, ${u.cache_read_input_tokens} leídos de caché` : '');
+    if(d.stop_reason==='max_tokens') info += '. La respuesta se cortó: sube el máximo de tokens.';
+  }
+  const p = parseLLM(text);
+  if(!p.prompt) throw new Error('El modelo no ha devuelto ningún prompt.');
+  $('#prompt').value=p.prompt; state.translation=p.trans; state.promptFromLLM=p.prompt;
+  renderTrans(); addCost(cost);
+  msg($('#msgPrompt'), 'Prompt listo por '+money(cost)+(info?' ('+info+')':'')+'.', info.includes('cortó')?'warn':'ok');
+  return cost;
+}
+function renderTrans(){
+  const t=state.translation; const edited = t && $('#prompt').value.trim()!==state.promptFromLLM;
+  $('#trans').innerHTML = t ? `<b>En castellano${edited?' (del prompt original, antes de tu edición)':''}:</b> ${esc(t)}` : '';
+}
+$('#prompt').addEventListener('input',renderTrans);
+$('#btnImprove').onclick=async()=>{
+  setBusy(true); msg($('#msgPrompt'),'Mejorando el prompt…','ok');
+  try{ await improve(); }catch(e){ msg($('#msgPrompt'),e.message,'err'); }
+  setBusy(false);
+};
+$('#btnCopy').onclick=async()=>{ try{await navigator.clipboard.writeText($('#prompt').value); msg($('#msgPrompt'),'Prompt copiado.','ok');}catch{ msg($('#msgPrompt'),'No se ha podido copiar.','err'); } };
+$('#btnDlPrompt').onclick=()=>download('prompt-genimod.txt', $('#prompt').value + (state.translation?'\n\n[ES] '+state.translation:''));
+$('#btnClearPrompt').onclick=()=>{ $('#prompt').value=''; state.translation=''; renderTrans(); msg($('#msgPrompt'),''); updateUI(); };
+
+/* ============ Paso 3: generar imagen ============ */
+function setBusy(b){ state.busy=b; updateUI(); }
+function showLoading(text){ $('#canvas').innerHTML=`<div class="empty"><div class="spinner"></div>${esc(text)}</div>`; }
+async function isBlack(blob){
+  try{ const bmp=await createImageBitmap(blob); const c=document.createElement('canvas'); c.width=c.height=24;
+    const x=c.getContext('2d'); x.drawImage(bmp,0,0,24,24); const d=x.getImageData(0,0,24,24).data;
+    let s=0; for(let i=0;i<d.length;i+=4) s+=d[i]+d[i+1]+d[i+2]; return s/(d.length/4*3) < 6;
+  }catch{ return false; }
+}
+async function generate(opts={}){
+  const {promptOverride, seedOverride, draftOverride, fromEntry} = opts;
+  const prompt = promptOverride ?? $('#prompt').value.trim();
+  const draft = draftOverride ?? $('#draft').checked;
+  const model = fromEntry ? fromEntry.params.model : imageModelId();
+  const fmt = fromEntry ? fromEntry.params.format : $('#format').value;
+  const [w,h] = (()=>{ const [W,H]=SIZES[fmt]; if(!draft) return [W,H]; const s=512/Math.max(W,H); return [Math.round(W*s/16)*16,Math.round(H*s/16)*16]; })();
+  const seedField = $('#seed').value.trim();
+  const seed = seedOverride ?? (seedField!=='' ? parseInt(seedField,10) : randSeed());
+  const steps = fromEntry ? fromEntry.params.steps : (+$('#steps').value||null);
+  const tol = fromEntry ? fromEntry.params.tolerance : $('#tol').value;
+  const ref = fromEntry ? fromEntry.ref : state.ref;
+  const strength = fromEntry ? fromEntry.params.strength : +$('#strength').value;
+
+  const body = {prompt, seed, num_images:1, enable_safety_checker:true};
+  if(model===IMG2IMG){ body.image_url=ref; body.strength=strength; body.num_inference_steps=steps||28; }
+  else {
+    body.image_size = draft ? {width:w,height:h} : fmt;
+    if(model.includes('flux-pro')) { body.safety_tolerance=String(tol); body.output_format='png'; }
+    else { if(steps) body.num_inference_steps=steps; if(model.includes('schnell')) body.output_format='png'; }
+  }
+  const r = await fetch('https://fal.run/'+model,{method:'POST',headers:{'Authorization':'Key '+key('fal'),'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error('fal.ai: '+(d.detail?.[0]?.msg||(typeof d.detail==='string'?d.detail:'')||d.message||('error '+r.status)));
+  const img = d.images?.[0]; if(!img?.url) throw new Error('fal.ai no ha devuelto ninguna imagen.');
+  let blob=null; try{ blob = await (await fetch(img.url)).blob(); }catch{}
+  const W=img.width||w, H=img.height||h;
+  const cost = imageCost(model,W,H);
+  const flagged = !!(d.has_nsfw_concepts&&d.has_nsfw_concepts[0]) || (blob && await isBlack(blob));
+  const entry = {
+    date:new Date().toISOString(), preset:presetObj().name, idea:fromEntry?fromEntry.idea:$('#idea').value.trim(),
+    system:fromEntry?fromEntry.system:$('#sys').value, prompt, translation:fromEntry?fromEntry.translation:state.translation,
+    textModel: fromEntry?fromEntry.textModel:(mode()==='fal'?'fal: '+$('#falLlm').value:claudeId()),
+    params:{model, format:fmt, draft, width:W, height:H, seed:d.seed??seed, steps:model.includes('flux-pro')?null:(steps||null),
+      tolerance:tol, reference:!!ref, strength:model===IMG2IMG?strength:null},
+    ref: ref||null, cost:(opts.textCost||0)+cost, flagged, blob, url:img.url
+  };
+  addCost(cost);
+  entry.id = await dbAdd(entry);
+  showResult(entry);
+  renderHistory();
+  return entry;
+}
+function showResult(e){
+  state.current=e;
+  const src = e.blob ? URL.createObjectURL(e.blob) : e.url;
+  $('#canvas').innerHTML=`<img src="${src}" alt="Imagen generada: ${esc(e.idea||e.prompt).slice(0,120)}">`;
+  $('#canvas').style.aspectRatio = e.params.width+'/'+e.params.height;
+  $('#resMeta').hidden=false;
+  const fm = e.params.model===IMG2IMG ? 'FLUX dev img2img' : (FLUX_MODELS.find(m=>m.id===e.params.model)?.label||e.params.model);
+  $('#resInfo').innerHTML = `${esc(fm)} · ${e.params.width}×${e.params.height}${e.params.draft?' (borrador)':''} · semilla <b>${e.params.seed}</b> · ${money(e.cost)}`;
+  $('#btnFinal').hidden = !e.params.draft;
+  if(e.flagged) msg($('#msgImg'),'El filtro de seguridad ha bloqueado esta imagen (sale en negro). Reformula la idea: describe la prenda y el contexto profesional, evita referencias al cuerpo o a la desnudez, y prueba otra semilla.','warn');
+  else msg($('#msgImg'),'');
+}
+async function runGenerate(opts){
+  setBusy(true); msg($('#msgGen'),'');
+  try{
+    let textCost=0;
+    if(!opts?.promptOverride && !$('#prompt').value.trim()){
+      showLoading('Mejorando la idea…'); textCost = await improve() || 0;
+    }
+    showLoading(opts?.draftOverride===false?'Generando la versión final…':'Generando la imagen…');
+    await generate({...opts, textCost});
+  }catch(e){
+    msg($('#msgGen'),e.message,'err');
+    if(state.current) showResult(state.current); else $('#canvas').innerHTML='<p class="empty">No se ha generado la imagen. Revisa el mensaje y vuelve a intentarlo.</p>';
+  }
+  setBusy(false);
+}
+$('#btnGen').onclick=()=>runGenerate({});
+$('#btnVar').onclick=()=>{ const e=state.current; if(e) runGenerate({promptOverride:e.prompt, seedOverride:randSeed(), draftOverride:e.params.draft, fromEntry:e}); };
+$('#btnFinal').onclick=()=>{ const e=state.current; if(e) runGenerate({promptOverride:e.prompt, seedOverride:e.params.seed, draftOverride:false, fromEntry:e}); };
+$('#btnFix').onclick=()=>{ if(state.current){ $('#seed').value=state.current.params.seed; persist(); msg($('#msgGen'),'Semilla '+state.current.params.seed+' fijada.','ok'); } };
+$('#btnDl').onclick=()=>{ const e=state.current; if(!e) return;
+  if(e.blob) download(`genimod-${e.params.seed}.png`, e.blob); else window.open(e.url,'_blank','noopener'); };
+
+/* ============ Historial (IndexedDB) ============ */
+let dbp=null;
+function db(){ if(!dbp) dbp=new Promise((res,rej)=>{ try{
+  const r=indexedDB.open('genimod',2);
+  r.onupgradeneeded=()=>{ const d=r.result; if(!d.objectStoreNames.contains('gens')) d.createObjectStore('gens',{keyPath:'id',autoIncrement:true}); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
+}catch(e){rej(e)} }); return dbp; }
+async function tx(mode, fn){ const d=await db(); return new Promise((res,rej)=>{ const t=d.transaction('gens',mode); const s=t.objectStore('gens'); const out=fn(s); t.oncomplete=()=>res(out.result??out); t.onerror=()=>rej(t.error); }); }
+async function dbAdd(e){ try{ const {id,...rest}=e; return await tx('readwrite',s=>s.add(rest)); }catch{ return null; } }
+async function dbAll(){ try{ return await tx('readonly',s=>s.getAll()); }catch{ return []; } }
+async function dbDel(id){ try{ await tx('readwrite',s=>s.delete(id)); }catch{} }
+async function dbClear(){ try{ await tx('readwrite',s=>s.clear()); }catch{} }
+
+let histCache=[];
+async function renderHistory(){
+  histCache = (await dbAll()).sort((a,b)=>b.id-a.id);
+  $('#hCount').textContent = histCache.length+(histCache.length===1?' generación':' generaciones');
+  const g=$('#hgrid'); g.innerHTML='';
+  if(!histCache.length){ g.innerHTML='<p class="hint">Aún no hay generaciones. La primera aparecerá aquí.</p>'; }
+  histCache.forEach(e=>{
+    const c=document.createElement('div'); c.className='card'+(state.selected.has(e.id)?' sel':'');
+    const src = e.blob ? URL.createObjectURL(e.blob) : e.url;
+    c.innerHTML = `<div class="thumb"><img loading="lazy" src="${src}" alt=""></div>
+      <div class="body"><p>${esc(e.idea||e.prompt)}</p>
+      <span class="m">${esc(e.preset)} · ${e.params.width}×${e.params.height}${e.params.draft?' borrador':''} · ${money(e.cost)}${e.flagged?' · bloqueada':''}</span></div>
+      <div class="ops">
+        <label class="pick"><input type="checkbox" ${state.selected.has(e.id)?'checked':''}> Comparar</label>
+        <button type="button" data-a="ver">Ver</button><button type="button" data-a="var">Variación</button>
+        <button type="button" data-a="reusar">Reutilizar</button><button type="button" data-a="del">Borrar</button>
+      </div>`;
+    c.querySelector('input').onchange=ev=>{
+      if(ev.target.checked){ if(state.selected.size>=4){ ev.target.checked=false; return; } state.selected.add(e.id); } else state.selected.delete(e.id);
+      c.classList.toggle('sel',ev.target.checked); $('#btnCmp').disabled = state.selected.size<2;
+    };
+    c.querySelector('[data-a=ver]').onclick=()=>{ showResult(e); window.scrollTo({top:0,behavior:'smooth'}); };
+    c.querySelector('[data-a=var]').onclick=()=>{ showResult(e); window.scrollTo({top:0,behavior:'smooth'}); runGenerate({promptOverride:e.prompt, seedOverride:randSeed(), draftOverride:e.params.draft, fromEntry:e}); };
+    c.querySelector('[data-a=reusar]').onclick=()=>reuse(e);
+    c.querySelector('[data-a=del]').onclick=async()=>{ await dbDel(e.id); state.selected.delete(e.id); renderHistory(); };
+    g.appendChild(c);
+  });
+  $('#btnCmp').disabled = state.selected.size<2;
+}
+function reuse(e){
+  $('#idea').value=e.idea; $('#prompt').value=e.prompt; state.translation=e.translation||''; state.promptFromLLM=e.prompt; renderTrans();
+  $('#sys').value=e.system; state.sysDirty = e.system!==presetSys(presetObj());
+  if(e.params.model!==IMG2IMG) $('#quality').value=e.params.model;
+  $('#format').value=e.params.format; $('#draft').checked=e.params.draft; $('#seed').value=e.params.seed;
+  if(e.params.steps) $('#steps').value=e.params.steps;
+  if(e.ref){ state.ref=e.ref; $('#refPrev').src=e.ref; $('#refPrev').hidden=false; $('#refDel').hidden=false; $('#strengthRow').hidden=false; if(e.params.strength) $('#strength').value=e.params.strength; }
+  persist(); updateUI(); showResult(e); window.scrollTo({top:0,behavior:'smooth'});
+  msg($('#msgGen'),'Parámetros cargados, semilla incluida. Cambia una sola cosa y genera.','ok');
+}
+$('#btnUnsel').onclick=()=>{ state.selected.clear(); renderHistory(); $('#cmpBox').hidden=true; };
+$('#btnWipe').onclick=async()=>{ if(confirm('¿Borrar todo el historial de este navegador?')){ await dbClear(); state.selected.clear(); renderHistory(); $('#cmpBox').hidden=true; } };
+$('#btnDlPrompts').onclick=()=>{
+  const t = histCache.slice().reverse().map((e,i)=>`#${i+1} · ${new Date(e.date).toLocaleString('es-ES')} · ${e.preset} · semilla ${e.params.seed}\nIdea: ${e.idea}\nPrompt: ${e.prompt}${e.translation?'\nES: '+e.translation:''}\n`).join('\n');
+  download('prompts-genimod.txt', t||'Historial vacío.');
+};
+$('#btnCmp').onclick=()=>{
+  const items = histCache.filter(e=>state.selected.has(e.id));
+  const rows = [
+    ['Imagen', e=>`<img src="${e.blob?URL.createObjectURL(e.blob):e.url}" alt="">`, e=>e.id],
+    ['Fecha', e=>new Date(e.date).toLocaleString('es-ES')],
+    ['Estilo', e=>e.preset], ['Idea', e=>e.idea], ['Modelo de texto', e=>e.textModel],
+    ['Modelo de imagen', e=>e.params.model], ['Tamaño', e=>`${e.params.width}×${e.params.height}${e.params.draft?' (borrador)':''}`],
+    ['Semilla', e=>e.params.seed], ['Pasos', e=>e.params.steps??'—'], ['Tolerancia', e=>e.params.model.includes('pro')?e.params.tolerance:'—'],
+    ['Referencia', e=>e.params.reference?('sí, fuerza '+e.params.strength):'no'],
+    ['Instrucciones', e=>e.system], ['Prompt', e=>e.prompt], ['Coste', e=>money(e.cost)]
+  ];
+  $('#cmpTable').innerHTML = rows.map(([name,f,key])=>{
+    const vals = items.map(e=>String(f(e))); const diff = !key && new Set(vals).size>1;
+    return `<tr class="${diff?'d':''}"><th scope="row">${name}</th>${items.map((e,i)=>`<td>${name==='Imagen'?vals[i]:esc(vals[i])}</td>`).join('')}</tr>`;
+  }).join('');
+  $('#cmpBox').hidden=false; $('#cmpBox').scrollIntoView({behavior:'smooth'});
+};
+$('#btnCmpClose').onclick=()=>{ $('#cmpBox').hidden=true; };
+
+/* ============ Arranque ============ */
+fillSelects();
+const m0 = ls.get('mode','two'); document.querySelector(`input[name=mode][value="${m0}"]`).checked=true;
+$('#falLlm').value='anthropic/claude-3-5-haiku';
+$('#quality').value=FLUX_MODELS[0].id; $('#steps').value=FLUX_MODELS[0].steps;
+$('#format').value=presetObj().size;
+let saved=null; try{ saved=JSON.parse(ls.get('config','null')); }catch{}
+if(saved) applyConfig(saved); else { $('#sys').value=presetSys(presetObj()); renderPresets(); persist(); }
+const savedSys = ls.get('sys',null); if(savedSys){ $('#sys').value=savedSys; state.sysDirty=true; }
+$('#idea').value = ls.get('idea','');
+$('#cTotal').textContent=money(state.total);
+refreshKeys(); renderPresets(); renderHistory(); updateUI();
+</script>
+</body>
+</html>

@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenImOd — Generador de imágenes de moda mediante IA</title>
+<style>
+  :root {
+    --bg: #f5f9fe;
+    --card: #ffffff;
+    --border: #d9e6f5;
+    --border-strong: #b7cfe9;
+    --text: #14283f;
+    --muted: #55708d;
+    --blue-50: #eaf3fc;
+    --blue-100: #d5e7f9;
+    --blue-500: #3b82c4;
+    --blue-600: #2b6cb0;
+    --blue-700: #21568f;
+    --ok: #1d7a4b;
+    --ok-bg: #e8f6ee;
+    --err: #b3261e;
+    --err-bg: #fdecea;
+    --warn-bg: #fff7e0;
+    --warn-border: #ecd48a;
+    --radius: 14px;
+    --shadow: 0 2px 10px rgba(33, 86, 143, 0.07);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root { color-scheme: light; } }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 1rem; }
+  body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.55; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+
+  header.hero { padding: 2.5rem 0 1.5rem; }
+  header.hero h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.2rem, 5vw, 3.2rem); margin: 0; letter-spacing: -0.02em; color: var(--blue-700); font-weight: 700; }
+  header.hero p.sub { margin: .25rem 0 1rem; font-size: 1.15rem; color: var(--muted); }
+  .flow { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; font-size: .92rem; }
+  .flow span.step { background: var(--blue-50); border: 1px solid var(--blue-100); color: var(--blue-700); padding: .25rem .7rem; border-radius: 999px; font-weight: 600; }
+  .flow span.sep { color: var(--blue-500); }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
+  .card h2 { margin: 0 0 .9rem; font-size: 1.15rem; color: var(--blue-700); }
+  .card h3 { margin: 0 0 .5rem; font-size: 1rem; }
+
+  .notice { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; padding: .8rem 1rem; font-size: .9rem; margin-bottom: 1.25rem; }
+
+  label { display: block; font-weight: 600; margin-bottom: .35rem; font-size: .95rem; }
+  input[type="password"], input[type="text"], select, textarea {
+    width: 100%; font: inherit; color: var(--text); background: #fff;
+    border: 1px solid var(--border-strong); border-radius: 10px; padding: .6rem .75rem;
+  }
+  textarea { resize: vertical; min-height: 120px; }
+  textarea.tall { min-height: 260px; }
+  textarea[readonly] { background: var(--blue-50); }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible {
+    outline: 3px solid var(--blue-500); outline-offset: 2px;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .field { margin-bottom: 1rem; }
+  .row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+  .key-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .key-row input { flex: 1 1 200px; }
+  .hint { font-size: .85rem; color: var(--muted); margin: .3rem 0 0; }
+  .badge { display: inline-block; font-size: .8rem; padding: .1rem .55rem; border-radius: 999px; font-weight: 600; margin-left: .4rem; }
+  .badge.ok { background: var(--ok-bg); color: var(--ok); }
+  .badge.no { background: var(--blue-50); color: var(--muted); }
+
+  button { font: inherit; cursor: pointer; border-radius: 10px; padding: .5rem .95rem; border: 1px solid var(--border-strong); background: #fff; color: var(--blue-700); font-weight: 600; }
+  button:hover:not(:disabled) { background: var(--blue-50); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button.primary { background: var(--blue-600); color: #fff; border-color: var(--blue-600); }
+  button.primary:hover:not(:disabled) { background: var(--blue-700); }
+  button.big { width: 100%; font-size: 1.15rem; padding: .95rem 1rem; display: flex; align-items: center; justify-content: center; gap: .7rem; }
+
+  .spinner { width: 1.1em; height: 1.1em; border: 3px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; display: none; }
+  .busy .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+
+  .status { margin-top: .9rem; padding: .7rem 1rem; border-radius: 10px; font-weight: 600; display: none; }
+  .status.show { display: block; }
+  .status.info { background: var(--blue-50); color: var(--blue-700); border: 1px solid var(--blue-100); }
+  .status.ok { background: var(--ok-bg); color: var(--ok); border: 1px solid #b9e2cb; }
+  .status.error { background: var(--err-bg); color: var(--err); border: 1px solid #f3b9b4; }
+
+  .image-box { border: 2px dashed var(--border-strong); border-radius: var(--radius); min-height: 220px; display: flex; align-items: center; justify-content: center; color: var(--muted); padding: 1rem; text-align: center; background: var(--blue-50); }
+  .image-box.filled { border-style: solid; background: #fff; padding: .5rem; }
+  .image-box img { max-width: 100%; height: auto; max-height: 85vh; border-radius: 8px; display: block; }
+  .meta { font-size: .88rem; color: var(--muted); margin: .75rem 0 0; display: grid; gap: .15rem; }
+
+  details.card summary { cursor: pointer; font-weight: 700; color: var(--blue-700); font-size: 1.15rem; }
+  details.card ol { padding-left: 1.3rem; margin: .8rem 0; }
+  details.card li { margin-bottom: .3rem; }
+
+  footer { text-align: center; font-size: .82rem; color: var(--muted); padding-top: 1rem; }
+  footer a { color: var(--blue-600); }
+  .hidden { display: none !important; }
+
+  @media (max-width: 800px) { .grid2, .grid3 { grid-template-columns: 1fr; } .card { padding: 1.1rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>GenImOd</h1>
+    <p class="sub">Generador de imágenes de moda mediante IA</p>
+    <div class="flow" aria-label="Flujo de trabajo">
+      <span class="step">Idea inicial</span><span class="sep" aria-hidden="true">→</span>
+      <span class="step">Claude</span><span class="sep" aria-hidden="true">→</span>
+      <span class="step">Prompt optimizado</span><span class="sep" aria-hidden="true">→</span>
+      <span class="step">FLUX</span><span class="sep" aria-hidden="true">→</span>
+      <span class="step">Imagen</span>
+    </div>
+  </header>
+
+  <div class="notice" role="note">
+    <strong>Aviso de seguridad:</strong> esta aplicación funciona directamente desde el navegador. Las API keys se almacenan localmente en este dispositivo y se envían únicamente al proveedor correspondiente para realizar las solicitudes. Almacenar una API key en <code>localStorage</code> es cómodo, pero no equivale a guardar un secreto en un servidor. No se recomienda este mecanismo para secretos institucionales ni para aplicaciones públicas de producción; para esos entornos se recomienda utilizar un backend o proxy seguro.
+  </div>
+
+  <!-- SECCIÓN 1 — CONFIGURACIÓN -->
+  <section class="card" aria-labelledby="h-config">
+    <h2 id="h-config">1. Configuración de las API keys</h2>
+    <div class="grid2">
+      <div>
+        <label for="anthropicKey">API key de Anthropic <span id="anthropicBadge" class="badge no">sin guardar</span></label>
+        <div class="key-row">
+          <input type="password" id="anthropicKey" autocomplete="off" spellcheck="false">
+          <button type="button" id="anthropicSave">Guardar</button>
+          <button type="button" id="anthropicToggle" aria-pressed="false">Mostrar</button>
+          <button type="button" id="anthropicDelete">Borrar</button>
+        </div>
+      </div>
+      <div>
+        <label for="falKey">API key de fal.ai <span id="falBadge" class="badge no">sin guardar</span></label>
+        <div class="key-row">
+          <input type="password" id="falKey" autocomplete="off" spellcheck="false">
+          <button type="button" id="falSave">Guardar</button>
+          <button type="button" id="falToggle" aria-pressed="false">Mostrar</button>
+          <button type="button" id="falDelete">Borrar</button>
+        </div>
+      </div>
+    </div>
+    <p class="hint">Cada clave solo se envía a su proveedor oficial (api.anthropic.com y fal.run). La validez definitiva la confirma la respuesta del proveedor.</p>
+  </section>
+
+  <!-- SECCIÓN 2 — MODELOS -->
+  <section class="card" aria-labelledby="h-models">
+    <h2 id="h-models">2. Modelos</h2>
+    <div class="grid2">
+      <div>
+        <div class="field">
+          <label for="claudeModel">Modelo de Claude</label>
+          <select id="claudeModel"></select>
+        </div>
+        <div class="field hidden" id="claudeCustomWrap">
+          <label for="claudeCustom">Identificador del modelo de Claude</label>
+          <input type="text" id="claudeCustom" autocomplete="off" spellcheck="false" placeholder="Identificador exacto del modelo">
+          <p class="hint">No se comprueba de antemano: será la API la que confirme si es válido.</p>
+        </div>
+      </div>
+      <div>
+        <div class="field">
+          <label for="falModel">Modelo de generación de imagen</label>
+          <select id="falModel"></select>
+        </div>
+        <div class="field hidden" id="falCustomWrap">
+          <label for="falCustom">Identificador del modelo de fal.ai</label>
+          <input type="text" id="falCustom" autocomplete="off" spellcheck="false" placeholder="p. ej. fal-ai/flux-pro/v1.1">
+          <p class="hint">Se enviarán los parámetros definidos en <code>CUSTOM_FAL_PARAMS</code> (configurable en el código).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 3 — PROMPT -->
+  <section class="card" aria-labelledby="h-prompt">
+    <h2 id="h-prompt">3. Prompt</h2>
+    <div class="field">
+      <label for="systemPrompt">Instrucciones del sistema</label>
+      <textarea id="systemPrompt" class="tall"></textarea>
+      <div class="row">
+        <button type="button" id="systemClear">Borrar</button>
+        <button type="button" id="systemRestore">Restaurar predeterminado</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="idea">Idea inicial <span aria-hidden="true">*</span></label>
+      <textarea id="idea" required aria-required="true" placeholder="Describe brevemente la prenda que quieres visualizar..."></textarea>
+      <div class="row"><button type="button" id="ideaClear">Borrar</button></div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 4 — PARÁMETROS -->
+  <section class="card" aria-labelledby="h-params">
+    <h2 id="h-params">4. Parámetros de la imagen</h2>
+    <div class="grid3">
+      <div>
+        <label for="steps">Número de pasos de inferencia</label>
+        <select id="steps"></select>
+      </div>
+      <div>
+        <label for="formatFixed">Formato</label>
+        <input type="text" id="formatFixed" value="PNG" readonly aria-readonly="true">
+      </div>
+      <div>
+        <label for="imageSize">Tamaño / formato de imagen</label>
+        <select id="imageSize"></select>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 5 — ACCIÓN -->
+  <section class="card" aria-labelledby="h-action">
+    <h2 id="h-action">5. Generar</h2>
+    <button type="button" id="generate" class="primary big" disabled>
+      <span class="spinner" aria-hidden="true"></span><span id="generateLabel">Generar imagen</span>
+    </button>
+    <p class="hint" id="generateHint">Para activar el botón necesitas las dos API keys guardadas y una idea inicial.</p>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <div id="error" class="status error" role="alert"></div>
+  </section>
+
+  <!-- RESULTADOS -->
+  <section class="card" aria-labelledby="h-claude">
+    <h2 id="h-claude">Prompt generado por Claude</h2>
+    <textarea id="generatedPrompt" class="tall" readonly aria-label="Prompt generado por Claude" placeholder="El prompt generado por Claude aparecerá aquí."></textarea>
+    <div class="row">
+      <button type="button" id="copyPrompt" disabled>Copiar prompt</button>
+      <button type="button" id="downloadPrompt" disabled>Descargar prompt</button>
+      <button type="button" id="clearPrompt" disabled>Borrar</button>
+      <button type="button" id="downloadTxt" disabled>Descargar prompts (.txt)</button>
+    </div>
+    <p class="meta" id="claudeMeta"></p>
+  </section>
+
+  <section class="card" aria-labelledby="h-image">
+    <h2 id="h-image">Imagen generada</h2>
+    <div class="image-box" id="imageBox"><span>La imagen generada aparecerá aquí.</span></div>
+    <div class="meta" id="imageMeta"></div>
+    <div class="row"><button type="button" id="downloadImage" class="primary" disabled>Descargar imagen PNG</button></div>
+  </section>
+
+  <!-- SECCIÓN EDUCATIVA -->
+  <details class="card">
+    <summary>¿Cómo funciona GenImOd?</summary>
+    <ol>
+      <li>El usuario introduce una idea inicial.</li>
+      <li>Claude analiza y mejora la idea.</li>
+      <li>Claude genera un prompt especializado en inglés.</li>
+      <li>El prompt se envía a FLUX mediante fal.ai.</li>
+      <li>FLUX genera la imagen.</li>
+      <li>GenImOd muestra y permite descargar el resultado.</li>
+    </ol>
+    <p>La imagen resultante depende de:</p>
+    <ul>
+      <li>La idea inicial.</li>
+      <li>Las instrucciones del sistema.</li>
+      <li>El modelo de Claude seleccionado.</li>
+      <li>El modelo FLUX seleccionado.</li>
+      <li>Los parámetros de inferencia.</li>
+    </ul>
+    <p>Prueba a cambiar solo una de estas variables cada vez para observar su efecto sobre el resultado.</p>
+  </details>
+
+  <footer>
+    <p>Rafael Puerto (<a href="mailto:r.puerto@umh.es">r.puerto@umh.es</a>)</p>
+    <p>Última modificación: 24/09/2026</p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+(() => {
+
+/* ==========================================================================
+   CONFIGURACIÓN — modifica aquí los valores habituales
+   ========================================================================== */
+const APP_CONFIG = {
+  name: "GenImOd",
+  requestTimeoutMs: 60000,        // Tiempo máximo por solicitud (60 s)
+  queueMaxWaitMs: 120000,         // Tiempo máximo total si fal.ai responde con cola
+  queuePollIntervalMs: 2000,
+  anthropic: {
+    endpoint: "https://api.anthropic.com/v1/messages",
+    version: "2023-06-01",
+    defaultModel: "claude-sonnet-4-5-20250929",   // Configurable: no asumas que es válido indefinidamente
+    maxTokens: 4096
+  },
+  fal: {
+    baseUrl: "https://fal.run/",                  // El endpoint final es baseUrl + identificador del modelo
+    defaultModel: "fal-ai/flux-pro/v1.1",
+    defaultInferenceSteps: 20,
+    defaultImageSize: "portrait_4_3",
+    outputFormat: "png",
+    numImages: 1
+  }
+};
+
+/* Modelos de Claude configurados. Para añadir otro, agrega una entrada. */
+const CLAUDE_MODELS = [
+  { id: "claude-sonnet-4-5-20250929", label: "Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)" },
+  { id: "claude-sonnet-5",            label: "Claude Sonnet 5 (claude-sonnet-5)" },
+  { id: "claude-opus-5-5",            label: "Claude Opus 5.5 (claude-opus-5-5)" },
+  { id: "claude-haiku-4-5-20251001",  label: "Claude Haiku 4.5 (claude-haiku-4-5-20251001)" }
+];
+
+/* Modelos de fal.ai configurados y parámetros que admite cada uno.
+   Para añadir otro modelo, agrega una entrada con su esquema real. */
+const FAL_MODELS = {
+  "fal-ai/flux-pro/v1.1": {
+    label: "FLUX 1.1 [pro] (fal-ai/flux-pro/v1.1)",
+    params: ["prompt", "num_inference_steps", "num_images", "output_format", "image_size"],
+    imageSizes: [
+      { value: "portrait_4_3",  label: "Retrato 4:3" },
+      { value: "portrait_16_9", label: "Retrato 16:9" }
+    ]
+  }
+};
+/* Parámetros enviados a un modelo introducido manualmente ("Otro…"). */
+const CUSTOM_FAL_PARAMS = ["prompt", "num_inference_steps", "num_images", "output_format", "image_size"];
+const CUSTOM_FAL_IMAGE_SIZES = FAL_MODELS[APP_CONFIG.fal.defaultModel].imageSizes;
+const INFERENCE_STEP_OPTIONS = [10, 20, 30, 40];
+
+/* Precios documentados. Si están vacíos, se muestra "Coste: no disponible".
+   Formato Anthropic: { "<modelo>": { inputPerMTok: <USD>, outputPerMTok: <USD> } }
+   Formato fal:       { "<modelo>": { perImage: <USD> } } */
+const PRICING = {
+  anthropic: {},
+  fal: {}
+};
+
+/* Prompt del sistema predeterminado para Claude. */
+const DEFAULT_SYSTEM_PROMPT = `Eres un experto en fotografía comercial de moda, dirección de arte, fotografía de producto y descripción de materiales y texturas.
+
+Tu tarea es transformar una idea inicial, posiblemente breve o incompleta, en un prompt de alta calidad para un modelo de generación de imágenes FLUX.
+
+La imagen solicitada debe representar una prenda de moda mediante una fotografía comercial hiperrealista de cuerpo completo.
+
+Describe de forma precisa y visualmente útil:
+
+* La prenda y su construcción.
+* Silueta, corte y proporciones.
+* Materiales y tejidos.
+* Textura superficial y comportamiento físico del tejido.
+* Costuras, pespuntes, dobladillos, cierres y acabados.
+* Pequeñas imperfecciones naturales.
+* Variaciones sutiles del material.
+* Pliegues, arrugas y tensión del tejido.
+* Microdetalles visibles.
+* Caída natural de la prenda.
+* Relación entre la prenda y el cuerpo.
+* Pose y postura del modelo cuando sea relevante.
+* Iluminación.
+* Sombras y reflejos.
+* Entorno y fondo.
+* Composición fotográfica.
+* Distancia y perspectiva de cámara.
+* Focal aproximada, por ejemplo 85mm, cuando resulte apropiada.
+* Profundidad de campo.
+* Apertura aproximada, por ejemplo f/1.4, cuando resulte apropiada.
+* Calidad y características propias de una fotografía comercial real.
+
+No utilices palabras vacías o genéricas como “photorealistic”, “hyperrealistic”, “ultra-detailed” o “hyperdetailed” como sustituto de una descripción visual concreta.
+
+En su lugar, describe los elementos físicos, ópticos, materiales y fotográficos que hacen que la imagen resulte creíble.
+
+La fotografía debe mostrar la prenda de cuerpo completo y permitir apreciar claramente su diseño y construcción.
+
+El prompt final debe estar optimizado para FLUX.
+
+Devuelve ÚNICAMENTE el prompt final en inglés.
+
+No añadas explicaciones, introducciones, comentarios, encabezados, listas, comillas ni bloques Markdown.`;
+
+/* Claves de localStorage (las API keys usan exactamente estos nombres). */
+const STORAGE = {
+  anthropicKey: "ia_anthropic_key",
+  falKey: "ia_fal_key",
+  claudeModel: "genimod_claude_model",
+  falModel: "genimod_fal_model",
+  steps: "genimod_inference_steps",
+  imageSize: "genimod_image_size"
+};
+
+const OTHER = "__otro__";
+
+/* ==========================================================================
+   ESTADO Y REFERENCIAS
+   ========================================================================== */
+const $ = (id) => document.getElementById(id);
+const state = {
+  busy: false,
+  lastPrompt: "",
+  lastSystem: "",
+  lastIdea: "",
+  imageUrl: "",
+  imageModel: "",
+  imageSteps: null
+};
+
+/* ==========================================================================
+   ALMACENAMIENTO LOCAL
+   ========================================================================== */
+function storageGet(key) { try { return localStorage.getItem(key) || ""; } catch (e) { return ""; } }
+function storageSet(key, value) { try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
+function storageRemove(key) { try { localStorage.removeItem(key); } catch (e) { /* sin acción */ } }
+
+/* ==========================================================================
+   GESTIÓN DE API KEYS
+   ========================================================================== */
+function keyConfig(provider) {
+  return provider === "anthropic"
+    ? { storage: STORAGE.anthropicKey, input: $("anthropicKey"), badge: $("anthropicBadge"), name: "Anthropic" }
+    : { storage: STORAGE.falKey, input: $("falKey"), badge: $("falBadge"), name: "fal.ai" };
+}
+
+function saveApiKey(provider) {
+  const cfg = keyConfig(provider);
+  const value = cfg.input.value.trim();
+  if (!value) { showError(`Introduce la API key de ${cfg.name} antes de guardarla.`); return; }
+  if (!storageSet(cfg.storage, value)) { showError("No se ha podido guardar la clave en este navegador."); return; }
+  clearError();
+  cfg.input.value = "";
+  showStatus(`API key de ${cfg.name} guardada en este dispositivo.`, "ok");
+  refreshKeyBadges();
+  validateForm();
+}
+
+function deleteApiKey(provider) {
+  const cfg = keyConfig(provider);
+  storageRemove(cfg.storage);
+  cfg.input.value = "";
+  showStatus(`API key de ${cfg.name} eliminada.`, "info");
+  refreshKeyBadges();
+  validateForm();
+}
+
+function toggleKeyVisibility(provider) {
+  const cfg = keyConfig(provider);
+  const btn = $(provider + "Toggle");
+  const show = cfg.input.type === "password";
+  cfg.input.type = show ? "text" : "password";
+  btn.textContent = show ? "Ocultar" : "Mostrar";
+  btn.setAttribute("aria-pressed", String(show));
+}
+
+function refreshKeyBadges() {
+  ["anthropic", "fal"].forEach((p) => {
+    const cfg = keyConfig(p);
+    const saved = !!storageGet(cfg.storage);
+    cfg.badge.textContent = saved ? "guardada" : "sin guardar";
+    cfg.badge.className = "badge " + (saved ? "ok" : "no");
+    cfg.input.placeholder = saved ? "Clave guardada (introduce otra para reemplazarla)" : "Pega aquí tu API key";
+  });
+}
+
+/* ==========================================================================
+   MODELOS Y PARÁMETROS
+   ========================================================================== */
+function fillSelect(select, options) {
+  select.innerHTML = "";
+  options.forEach((o) => {
+    const opt = document.createElement("option");
+    opt.value = o.value; opt.textContent = o.label;
+    select.appendChild(opt);
+  });
+}
+
+function getActiveModel(kind) {
+  if (kind === "claude") {
+    const v = $("claudeModel").value;
+    return (v === OTHER ? $("claudeCustom").value : v).trim();
+  }
+  const v = $("falModel").value;
+  return (v === OTHER ? $("falCustom").value : v).trim();
+}
+
+function refreshImageSizes(preferred) {
+  const sel = $("falModel").value;
+  const sizes = sel === OTHER ? CUSTOM_FAL_IMAGE_SIZES : FAL_MODELS[sel].imageSizes;
+  fillSelect($("imageSize"), sizes.map((s) => ({ value: s.value, label: s.label })));
+  const wanted = preferred || $("imageSize").value;
+  if (sizes.some((s) => s.value === wanted)) $("imageSize").value = wanted;
+  else $("imageSize").value = sizes.some((s) => s.value === APP_CONFIG.fal.defaultImageSize) ? APP_CONFIG.fal.defaultImageSize : sizes[0].value;
+}
+
+function toggleCustomFields() {
+  $("claudeCustomWrap").classList.toggle("hidden", $("claudeModel").value !== OTHER);
+  $("falCustomWrap").classList.toggle("hidden", $("falModel").value !== OTHER);
+}
+
+/* ==========================================================================
+   VALIDACIÓN DEL FORMULARIO
+   ========================================================================== */
+function validateForm() {
+  const hasKeys = !!storageGet(STORAGE.anthropicKey) && !!storageGet(STORAGE.falKey);
+  const hasIdea = $("idea").value.trim().length > 0;
+  const modelsOk = getActiveModel("claude").length > 0 && getActiveModel("fal").length > 0;
+  const ok = hasKeys && hasIdea && modelsOk && !state.busy;
+  $("generate").disabled = !ok;
+  const hint = $("generateHint");
+  if (state.busy) hint.textContent = "";
+  else if (ok) hint.textContent = "Todo listo para generar.";
+  else {
+    const missing = [];
+    if (!storageGet(STORAGE.anthropicKey)) missing.push("la API key de Anthropic");
+    if (!storageGet(STORAGE.falKey)) missing.push("la API key de fal.ai");
+    if (!hasIdea) missing.push("la idea inicial");
+    if (!modelsOk) missing.push("los identificadores de modelo");
+    hint.textContent = "Falta: " + missing.join(", ") + ".";
+  }
+  return ok;
+}
+
+/* ==========================================================================
+   MENSAJES DE ESTADO Y ERROR
+   ========================================================================== */
+function showStatus(message, type = "info") {
+  const el = $("status");
+  el.textContent = message;
+  el.className = "status show " + type;
+}
+function showError(message) {
+  const el = $("error");
+  el.textContent = "Error: " + message;
+  el.classList.add("show");
+}
+function clearError() { $("error").classList.remove("show"); $("error").textContent = ""; }
+
+function showLoading(isLoading, label) {
+  state.busy = isLoading;
+  $("generate").classList.toggle("busy", isLoading);
+  $("generate").setAttribute("aria-busy", String(isLoading));
+  $("generateLabel").textContent = isLoading ? (label || "Generando…") : "Generar imagen";
+  validateForm();
+}
+
+/* Elimina de un texto cualquier API key conocida antes de mostrarlo. */
+function redact(text) {
+  let out = String(text || "");
+  [storageGet(STORAGE.anthropicKey), storageGet(STORAGE.falKey), $("anthropicKey").value, $("falKey").value]
+    .filter((k) => k && k.length > 5)
+    .forEach((k) => { out = out.split(k).join("[clave oculta]"); });
+  return out;
+}
+
+/* ==========================================================================
+   GESTIÓN DE ERRORES HTTP
+   ========================================================================== */
+class AppError extends Error {}
+
+function messageForStatus(status) {
+  if (status === 400) return "Solicitud no válida. Revisa los parámetros introducidos.";
+  if (status === 401) return "La API key no es válida o no está autorizada.";
+  if (status === 403) return "El acceso a este modelo o servicio no está autorizado.";
+  if (status === 404) return "El modelo o endpoint no existe.";
+  if (status === 429) return "Se ha alcanzado el límite de uso o de solicitudes.";
+  if (status >= 500 && status <= 599) return "El proveedor ha devuelto un error interno.";
+  return `El proveedor ha devuelto una respuesta inesperada (HTTP ${status}).`;
+}
+
+/* Extrae un detalle breve y seguro del cuerpo de error del proveedor. */
+function providerDetail(data) {
+  try {
+    let d = "";
+    if (data && data.error && typeof data.error.message === "string") d = data.error.message;
+    else if (data && typeof data.detail === "string") d = data.detail;
+    else if (data && Array.isArray(data.detail) && data.detail[0] && data.detail[0].msg) d = data.detail[0].msg;
+    else if (data && typeof data.message === "string") d = data.message;
+    return d ? redact(d).slice(0, 300) : "";
+  } catch (e) { return ""; }
+}
+
+/* fetch con timeout (AbortController) y errores traducidos. */
+async function fetchJson(url, options) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), APP_CONFIG.requestTimeoutMs);
+  let response;
+  try {
+    response = await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err && err.name === "AbortError") throw new AppError("La operación ha superado el tiempo máximo de espera.");
+    throw new AppError("No se ha podido establecer conexión con el servicio.");
+  } finally {
+    clearTimeout(timer);
+  }
+  let data = null;
+  let parseFailed = false;
+  try { data = await response.json(); } catch (e) { parseFailed = true; }
+  if (!response.ok) {
+    const detail = providerDetail(data);
+    throw new AppError(messageForStatus(response.status) + (detail ? ` Detalle del proveedor: ${detail}` : ""));
+  }
+  if (parseFailed || data === null) throw new AppError("La respuesta del proveedor no es un JSON válido.");
+  return data;
+}
+
+/* ==========================================================================
+   ANTHROPIC — MEJORA DEL PROMPT
+   ========================================================================== */
+/* Mensaje de usuario estructurado que se envía a Claude. */
+function buildUserMessage(idea) {
+  return `Transforma la siguiente idea en un prompt profesional para FLUX.
+
+IDEA INICIAL:
+${idea}
+
+REQUISITOS:
+- Fotografía de moda.
+- Cuerpo completo.
+- La prenda debe ser claramente visible.
+- Descripción precisa de materiales y construcción.
+- Iluminación y cámara físicamente plausibles.
+- El resultado final debe ser un prompt en inglés.
+- Devuelve exclusivamente el prompt final.`;
+}
+
+async function mejorarPromptConClaude(systemPrompt, idea, model) {
+  const body = {
+    model,
+    max_tokens: APP_CONFIG.anthropic.maxTokens,
+    messages: [{ role: "user", content: buildUserMessage(idea) }]
+  };
+  if (systemPrompt.trim()) body.system = systemPrompt;
+
+  const data = await fetchJson(APP_CONFIG.anthropic.endpoint, {
+    method: "POST",
+    headers: {
+      "x-api-key": storageGet(STORAGE.anthropicKey),
+      "anthropic-version": APP_CONFIG.anthropic.version,
+      "anthropic-dangerous-direct-browser-access": "true",
+      "content-type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+  return { text: extractClaudeText(data), usage: data && data.usage ? data.usage : null };
+}
+
+/* Extrae el texto de los bloques de contenido; no asume que toda la respuesta sea texto. */
+function extractClaudeText(data) {
+  if (!data || !Array.isArray(data.content)) throw new AppError("Claude no ha generado un prompt válido.");
+  const text = data.content
+    .filter((b) => b && b.type === "text" && typeof b.text === "string")
+    .map((b) => b.text)
+    .join("\n")
+    .trim();
+  if (!text) throw new AppError("Claude no ha generado un prompt válido.");
+  return text;
+}
+
+/* ==========================================================================
+   FAL.AI — GENERACIÓN DE IMAGEN
+   ========================================================================== */
+function buildFalBody(model, prompt, steps, imageSize) {
+  const allowed = FAL_MODELS[model] ? FAL_MODELS[model].params : CUSTOM_FAL_PARAMS;
+  const all = {
+    prompt,
+    num_inference_steps: steps,
+    num_images: APP_CONFIG.fal.numImages,
+    output_format: APP_CONFIG.fal.outputFormat,   // Siempre PNG
+    image_size: imageSize
+  };
+  const body = {};
+  allowed.forEach((k) => { if (k in all) body[k] = all[k]; });
+  return body;
+}
+
+async function generarImagenConFal(prompt, model, steps, imageSize) {
+  const headers = {
+    "Authorization": "Key " + storageGet(STORAGE.falKey),
+    "Content-Type": "application/json"
+  };
+  const url = APP_CONFIG.fal.baseUrl + model;   // p. ej. https://fal.run/fal-ai/flux-pro/v1.1
+  let data = await fetchJson(url, {
+    method: "POST", headers,
+    body: JSON.stringify(buildFalBody(model, prompt, steps, imageSize))
+  });
+
+  // Si el servicio responde con un flujo de cola en lugar del resultado final, se sigue el flujo documentado.
+  const hasImages = data && Array.isArray(data.images);
+  if (!hasImages && data && (data.status_url || data.response_url)) {
+    data = await esperarColaFal(data, headers);
+  }
+  return extractFalImage(data);
+}
+
+async function esperarColaFal(queued, headers) {
+  const started = Date.now();
+  const statusUrl = queued.status_url;
+  const responseUrl = queued.response_url;
+  if (!statusUrl || !responseUrl) throw new AppError("fal.ai no ha devuelto ninguna imagen.");
+  const authOnly = { Authorization: headers.Authorization };
+  while (Date.now() - started < APP_CONFIG.queueMaxWaitMs) {
+    const st = await fetchJson(statusUrl, { method: "GET", headers: authOnly });
+    if (st && st.status === "COMPLETED") {
+      return await fetchJson(responseUrl, { method: "GET", headers: authOnly });
+    }
+    if (st && (st.status === "FAILED" || st.status === "ERROR")) {
+      throw new AppError("El proveedor ha devuelto un error interno.");
+    }
+    await new Promise((r) => setTimeout(r, APP_CONFIG.queuePollIntervalMs));
+  }
+  throw new AppError("La operación ha superado el tiempo máximo de espera.");
+}
+
+/* Valida la estructura y devuelve la primera imagen. */
+function extractFalImage(data) {
+  if (!data || !Array.isArray(data.images) || !data.images.length) {
+    throw new AppError("fal.ai no ha devuelto ninguna imagen.");
+  }
+  const img = data.images[0];
+  if (!img || typeof img.url !== "string" || !/^https:\/\//i.test(img.url)) {
+    throw new AppError("La respuesta de fal.ai no contiene una imagen válida.");
+  }
+  return { url: img.url, width: img.width || null, height: img.height || null, contentType: img.content_type || null, seed: data.seed ?? null };
+}
+
+/* ==========================================================================
+   VISUALIZACIÓN
+   ========================================================================== */
+function displayGeneratedPrompt(text, usage, model) {
+  $("generatedPrompt").value = text;
+  ["copyPrompt", "downloadPrompt", "clearPrompt", "downloadTxt"].forEach((id) => { $(id).disabled = !text; });
+  const meta = $("claudeMeta");
+  meta.textContent = "";
+  if (!text) return;
+  const lines = [`Modelo de Claude: ${model}`];
+  if (usage && Number.isFinite(usage.input_tokens) && Number.isFinite(usage.output_tokens)) {
+    lines.push(`Tokens: ${usage.input_tokens} de entrada · ${usage.output_tokens} de salida`);
+  }
+  lines.push(costLineAnthropic(model, usage));
+  lines.forEach((l) => { const s = document.createElement("div"); s.textContent = l; meta.appendChild(s); });
+}
+
+function costLineAnthropic(model, usage) {
+  const p = PRICING.anthropic[model];
+  if (p && usage && Number.isFinite(p.inputPerMTok) && Number.isFinite(p.outputPerMTok)) {
+    const cost = (usage.input_tokens * p.inputPerMTok + usage.output_tokens * p.outputPerMTok) / 1e6;
+    return `Coste del prompt: ${cost.toFixed(5)} USD`;
+  }
+  return "Coste: no disponible";
+}
+function costLineFal(model) {
+  const p = PRICING.fal[model];
+  if (p && Number.isFinite(p.perImage)) return `Coste de la imagen: ${p.perImage.toFixed(4)} USD`;
+  return "Coste: no disponible";
+}
+
+function displayGeneratedImage(info, model, steps) {
+  state.imageUrl = info.url;
+  state.imageModel = model;
+  state.imageSteps = steps;
+  const box = $("imageBox");
+  box.className = "image-box filled";
+  box.innerHTML = "";
+  const img = document.createElement("img");
+  img.alt = "Imagen de moda generada por IA";
+  img.referrerPolicy = "no-referrer";
+  img.addEventListener("load", () => renderImageMeta(info, model, steps, img.naturalWidth, img.naturalHeight));
+  img.addEventListener("error", () => showError("No se ha podido cargar la imagen desde fal.ai. Prueba a descargarla de nuevo."));
+  img.src = info.url;
+  box.appendChild(img);
+  renderImageMeta(info, model, steps, info.width, info.height);
+  $("downloadImage").disabled = false;
+}
+
+function renderImageMeta(info, model, steps, w, h) {
+  const meta = $("imageMeta");
+  meta.innerHTML = "";
+  const lines = [];
+  if (w && h) lines.push(`Dimensiones: ${w} × ${h} px`);
+  lines.push(`Modelo: ${model}`);
+  lines.push(`Pasos de inferencia: ${steps}`);
+  if (info.contentType) lines.push(`Tipo de contenido: ${info.contentType}`);
+  lines.push(costLineFal(model));
+  lines.forEach((l) => { const d = document.createElement("div"); d.textContent = l; meta.appendChild(d); });
+}
+
+/* ==========================================================================
+   DESCARGAS Y PORTAPAPELES
+   ========================================================================== */
+function saveBlob(blob, filename) {
+  const a = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function withExtension(name, ext) {
+  return name.toLowerCase().endsWith(ext) ? name : name + ext;
+}
+
+/* Exporta prompts a .txt (UTF-8). */
+function downloadPromptsAsTxt() {
+  const sep = "========================================";
+  const sub = "----------------------------------------";
+  const content =
+`${sep}
+GENIMOD — PROMPTS
+${sep}
+
+INSTRUCCIONES DEL SISTEMA
+${sub}
+
+${state.lastSystem}
+
+
+IDEA INICIAL
+${sub}
+
+${state.lastIdea}
+
+
+PROMPT GENERADO POR CLAUDE
+${sub}
+
+${state.lastPrompt}
+`;
+  saveBlob(new Blob([content], { type: "text/plain;charset=utf-8" }), withExtension("GenImOd_prompts", ".txt"));
+}
+
+function downloadPromptOnly() {
+  const text = $("generatedPrompt").value;
+  if (!text) return;
+  saveBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), "GenImOd_prompt.txt");
+}
+
+/* Descarga el PNG original devuelto por fal.ai, sin conversiones en el navegador. */
+async function downloadImageAsPng() {
+  if (!state.imageUrl) return;
+  try {
+    const resp = await fetch(state.imageUrl);
+    if (!resp.ok) throw new Error("http " + resp.status);
+    const blob = await resp.blob();
+    saveBlob(blob, withExtension("GenImOd_imagen", ".png"));
+  } catch (e) {
+    // Si el navegador bloquea la lectura directa (CORS), se abre la imagen original en otra pestaña.
+    window.open(state.imageUrl, "_blank", "noopener");
+    showStatus("El navegador no permitió la descarga directa. Se ha abierto la imagen en otra pestaña: usa «Guardar imagen como…».", "info");
+  }
+}
+
+async function copyToClipboard(text) {
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (err) { showError("No se ha podido copiar el prompt."); ta.remove(); return; }
+    ta.remove();
+  }
+  showStatus("Prompt copiado al portapapeles.", "ok");
+}
+
+/* ==========================================================================
+   FLUJO PRINCIPAL
+   ========================================================================== */
+async function generar() {
+  clearError();
+  if (!validateForm()) { showError("Completa todos los campos obligatorios antes de generar."); return; }
+
+  const systemPrompt = $("systemPrompt").value;
+  const idea = $("idea").value.trim();
+  const claudeModel = getActiveModel("claude");
+  const falModel = getActiveModel("fal");
+  const steps = Number($("steps").value);
+  const imageSize = $("imageSize").value;
+
+  resetResults();
+  showLoading(true, "Generando…");
+  try {
+    showStatus("Mejorando la idea con Claude…", "info");
+    const claude = await mejorarPromptConClaude(systemPrompt, idea, claudeModel);
+    state.lastPrompt = claude.text;
+    state.lastSystem = systemPrompt;
+    state.lastIdea = idea;
+    displayGeneratedPrompt(claude.text, claude.usage, claudeModel);
+    showStatus("Prompt generado por Claude", "ok");
+
+    showStatus("Generando imagen con FLUX…", "info");
+    const image = await generarImagenConFal(claude.text, falModel, steps, imageSize);
+    displayGeneratedImage(image, falModel, steps);
+    showStatus("Imagen generada correctamente.", "ok");
+  } catch (err) {
+    $("status").className = "status";
+    showError(err instanceof AppError ? err.message : "Se ha producido un error inesperado.");
+  } finally {
+    showLoading(false);
+  }
+}
+
+function resetResults() {
+  state.imageUrl = "";
+  $("imageBox").className = "image-box";
+  $("imageBox").innerHTML = "<span>La imagen generada aparecerá aquí.</span>";
+  $("imageMeta").innerHTML = "";
+  $("downloadImage").disabled = true;
+  displayGeneratedPrompt("", null, "");
+}
+
+function resetApplication() {
+  resetResults();
+  clearError();
+  $("status").className = "status";
+  state.lastPrompt = state.lastSystem = state.lastIdea = "";
+}
+
+/* ==========================================================================
+   INICIALIZACIÓN
+   ========================================================================== */
+function loadSettings() {
+  // Modelos de Claude
+  fillSelect($("claudeModel"), [
+    ...CLAUDE_MODELS.map((m) => ({ value: m.id, label: m.label })),
+    { value: OTHER, label: "Otro…" }
+  ]);
+  const savedClaude = storageGet(STORAGE.claudeModel);
+  if (savedClaude) {
+    if (CLAUDE_MODELS.some((m) => m.id === savedClaude)) $("claudeModel").value = savedClaude;
+    else { $("claudeModel").value = OTHER; $("claudeCustom").value = savedClaude; }
+  } else {
+    $("claudeModel").value = APP_CONFIG.anthropic.defaultModel;
+  }
+
+  // Modelos de fal.ai
+  fillSelect($("falModel"), [
+    ...Object.entries(FAL_MODELS).map(([id, m]) => ({ value: id, label: m.label })),
+    { value: OTHER, label: "Otro…" }
+  ]);
+  const savedFal = storageGet(STORAGE.falModel);
+  if (savedFal) {
+    if (FAL_MODELS[savedFal]) $("falModel").value = savedFal;
+    else { $("falModel").value = OTHER; $("falCustom").value = savedFal; }
+  } else {
+    $("falModel").value = APP_CONFIG.fal.defaultModel;
+  }
+
+  // Pasos de inferencia y tamaño
+  fillSelect($("steps"), INFERENCE_STEP_OPTIONS.map((n) => ({ value: String(n), label: String(n) })));
+  const savedSteps = storageGet(STORAGE.steps);
+  $("steps").value = INFERENCE_STEP_OPTIONS.includes(Number(savedSteps)) ? savedSteps : String(APP_CONFIG.fal.defaultInferenceSteps);
+  refreshImageSizes(storageGet(STORAGE.imageSize) || APP_CONFIG.fal.defaultImageSize);
+
+  $("systemPrompt").value = DEFAULT_SYSTEM_PROMPT;
+  toggleCustomFields();
+  refreshKeyBadges();
+}
+
+function persistPreferences() {
+  storageSet(STORAGE.claudeModel, getActiveModel("claude"));
+  storageSet(STORAGE.falModel, getActiveModel("fal"));
+  storageSet(STORAGE.steps, $("steps").value);
+  storageSet(STORAGE.imageSize, $("imageSize").value);
+}
+
+function initializeApp() {
+  loadSettings();
+
+  ["anthropic", "fal"].forEach((p) => {
+    $(p + "Save").addEventListener("click", () => saveApiKey(p));
+    $(p + "Delete").addEventListener("click", () => deleteApiKey(p));
+    $(p + "Toggle").addEventListener("click", () => toggleKeyVisibility(p));
+    $(p + "Key").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); saveApiKey(p); } });
+  });
+
+  $("claudeModel").addEventListener("change", () => { toggleCustomFields(); persistPreferences(); validateForm(); });
+  $("claudeCustom").addEventListener("input", () => { persistPreferences(); validateForm(); });
+  $("falModel").addEventListener("change", () => { toggleCustomFields(); refreshImageSizes(); persistPreferences(); validateForm(); });
+  $("falCustom").addEventListener("input", () => { persistPreferences(); validateForm(); });
+  $("steps").addEventListener("change", persistPreferences);
+  $("imageSize").addEventListener("change", persistPreferences);
+
+  $("systemClear").addEventListener("click", () => { $("systemPrompt").value = ""; $("systemPrompt").focus(); });
+  $("systemRestore").addEventListener("click", () => { $("systemPrompt").value = DEFAULT_SYSTEM_PROMPT; });
+  $("ideaClear").addEventListener("click", () => { $("idea").value = ""; $("idea").focus(); validateForm(); });
+  $("idea").addEventListener("input", validateForm);
+
+  $("generate").addEventListener("click", generar);
+  $("copyPrompt").addEventListener("click", () => copyToClipboard($("generatedPrompt").value));
+  $("downloadPrompt").addEventListener("click", downloadPromptOnly);
+  $("clearPrompt").addEventListener("click", () => { displayGeneratedPrompt("", null, ""); state.lastPrompt = ""; });
+  $("downloadTxt").addEventListener("click", downloadPromptsAsTxt);
+  $("downloadImage").addEventListener("click", downloadImageAsPng);
+
+  validateForm();
+}
+
+initializeApp();
+
+})();
+</script>
+</body>
+</html>

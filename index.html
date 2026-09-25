@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModaPatron IA</title>
+<!-- Librerías externas (CDNs) para Markdown y PDF -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root { --bg: #faf9f7; --accent: #8b6f47; --text: #2c2c2c; --border: #e0dcd3; --err: #c0392b; --ok: #27ae60; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem 1rem; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { text-align: center; font-weight: 300; color: var(--accent); margin-bottom: 1rem; }
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  label { display: block; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; color: #666; }
+  input, select, textarea { width: 100%; padding: 0.7rem; border: 1px solid var(--border); border-radius: 4px; font-size: 1rem; background: #fdfcfa; margin-bottom: 1rem; }
+  textarea { min-height: 100px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media(max-width: 600px) { .row { grid-template-columns: 1fr; } }
+  .btn { cursor: pointer; border: none; border-radius: 4px; padding: 0.7rem 1.2rem; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: #fff; width: 100%; margin-top: 1rem; }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); margin-right: 0.5rem; }
+  .btn-secondary:hover { background: var(--bg); }
+  .status { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2em; }
+  .status.ok { color: var(--ok); }
+  .status.err { color: var(--err); }
+  #result { white-space: pre-wrap; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem; text-align: left; }
+  th { background: var(--bg); font-weight: 600; }
+  .spinner { display: none; width: 20px; height: 20px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .export-bar { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+  .disclaimer { font-size: 0.8rem; color: #888; text-align: center; padding: 1rem; border-top: 1px dashed var(--border); margin-top: 2rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header><h1>ModaPatron IA</h1><p>Generador de fichas técnicas de patronaje</p></header>
+
+  <!-- GESTIÓN API KEYS -->
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="provider">Proveedor</label>
+        <select id="provider">
+          <option value="anthropic" selected>Anthropic</option>
+          <option value="openai">OpenAI</option>
+          <option value="gemini">Google Gemini</option>
+        </select>
+      </div>
+      <div>
+        <label for="model">Modelo</label>
+        <select id="model"></select>
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <label for="apikey">API Key del proveedor activo</label>
+      <div style="display:flex;gap:0.5rem;align-items:end">
+        <input type="password" id="apikey" placeholder="Pegue su clave aquí..." style="margin-bottom:0;flex:1">
+        <button class="btn btn-secondary" onclick="guardarKey()">Guardar</button>
+        <button class="btn btn-secondary" onclick="borrarKey()">Borrar</button>
+      </div>
+      <div id="keyStatus" class="status"></div>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="tipo">Tipo de prenda *</label>
+        <select id="tipo">
+          <option>Vestido</option><option>Blazer</option><option>Camisa</option>
+          <option>Pantalón</option><option>Falda</option><option>Abrigo</option>
+        </select>
+      </div>
+      <div>
+        <label for="talla">Talla objetivo *</label>
+        <select id="talla">
+          <option>XS (34)</option><option>S (36)</option>
+          <option selected>M (38-40)</option><option>L (42-44)</option><option>XL (46-48)</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <label for="spec">Especificación detallada *</label>
+      <textarea id="spec" placeholder="Tejido, caída, tipo de cierre, manga, largo exacto..."></textarea>
+    </div>
+    <div style="margin-top:1rem">
+      <label for="detalle">Nivel de detalle</label>
+      <select id="detalle">
+        <option>Boceto conceptual</option>
+        <option selected>Industrial completo</option>
+        <option>Alta costura con ajustes</option>
+      </select>
+    </div>
+    <button id="btnGen" class="btn btn-primary" disabled onclick="generar()">Generar Patrón</button>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="card" id="resultCard" style="display:none">
+    <div class="spinner" id="spinner"></div>
+    <div id="result"></div>
+    <div class="export-bar" id="exportBar" style="display:none">
+      <button class="btn btn-secondary" onclick="copiarResultado()">Copiar JSON</button>
+      <button class="btn btn-secondary" onclick="exportarPDF()">Exportar PDF</button>
+    </div>
+    <div id="costInfo" style="font-size:0.8rem;color:#888;margin-top:1rem;text-align:right"></div>
+  </div>
+
+  <p class="disclaimer">⚠️ La IA puede cometer errores. Revisa el resultado antes de usarlo; esta herramienta no sustituye el criterio profesional del patrónista.</p>
+</div>
+
+<script>
+/* 
+   CONFIGURACIÓN DOCENTE:
+   - SYSTEM_PROMPT: Define el rol del modelo.
+   - MODELOS: Lista de identificadores de modelos disponibles.
+   - PRECIOS: Coste por millón de tokens (USD).
+*/
+
+const SYSTEM_PROMPT = "Eres un patronista senior con 25 años de experiencia. Genera patrones de corte precisos. Usa terminología técnica. Todas las medidas basadas en norma UNE-EN 13402. Incluye márgenes de costura de 1cm y dobladillo de 3cm. Responde ÚNICAMENTE con JSON válido sin texto adicional.";
+
+const MODELOS = {
+  anthropic: ['claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
+  openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+  gemini: ['gemini-1.5-pro', 'gemini-1.5-flash']
+};
+
+const PRECIOS = {
+  'claude-sonnet-4-20250514': { in: 3, out: 15 },
+  'claude-3-5-haiku-20241022': { in: 0.8, out: 4 },
+  'claude-3-opus-20240229': { in: 15, out: 75 },
+  'gpt-4o': { in: 2.5, out: 10 },
+  'gpt-4o-mini': { in: 0.15, out: 0.6 },
+  'gpt-4-turbo': { in: 10, out: 30 },
+  'gemini-1.5-pro': { in: 1.25, out: 5 },
+  'gemini-1.5-flash': { in: 0.075, out: 0.3 }
+};
+
+let ultimoResultado = null;
+const $ = id => document.getElementById(id);
+
+function init() {
+  $('provider').addEventListener('change', () => { renderModels(); cargarKey(); validar(); });
+  $('model').addEventListener('change', validar);
+  ['tipo', 'talla', 'spec'].forEach(id => $(id).addEventListener('input', validar));
+  renderModels();
+  cargarKey();
+}
+
+function renderModels() {
+  const prov = $('provider').value;
+  const options = MODELOS[prov].map(m => '<option value="' + m + '">' + m + '</option>').join('');
+  $('model').innerHTML = options + '<option value="__otro__">Otro...</option>';
+  
+  // Preselección por defecto según proveedor
+  if (prov === 'anthropic') $('model').value = 'claude-sonnet-4-20250514';
+  else if (prov === 'openai') $('model').value = 'gpt-4o-mini';
+  else $('model').value = 'gemini-1.5-flash';
+}
+
+function keyStorageKey() { return 'ia_' + $('provider').value + '_key'; }
+
+function cargarKey() {
+  const k = localStorage.getItem(keyStorageKey()) || '';
+  $('apikey').value = k;
+  $('keyStatus').textContent = k ? '✓ Key cargada localmente' : '';
+  $('keyStatus').className = 'status ' + (k ? 'ok' : '');
+}
+
+function guardarKey() {
+  const v = $('apikey').value.trim();
+  if (!validarPrefijo(v)) {
+    $('keyStatus').textContent = '✗ Formato de clave inválido';
+    $('keyStatus').className = 'status err';
+    return;
+  }
+  localStorage.setItem(keyStorageKey(), v);
+  $('keyStatus').textContent = '✓ Guardada en este navegador';
+  $('keyStatus').className = 'status ok';
+  validar();
+}
+
+function borrarKey() {
+  localStorage.removeItem(keyStorageKey());
+  $('apikey').value = '';
+  $('keyStatus').textContent = 'Key eliminada';
+  $('keyStatus').className = 'status';
+  validar();
+}
+
+function validarPrefijo(k) {
+  if (!k) return false;
+  const p = $('provider').value;
+  if (p === 'openai') return k.startsWith('sk-');
+  if (p === 'anthropic') return k.startsWith('sk-ant-');
+  if (p === 'gemini') return k.startsWith('AIza');
+  return true;
+}
+
+function validar() {
+  const tieneKey = !!localStorage.getItem(keyStorageKey());
+  const camposOK = $('tipo').value && $('talla').value && $('spec').value.trim().length > 10;
+  $('btnGen').disabled = !(tieneKey && camposOK);
+}
+
+async function llamarIA(system, user, o) {
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 60000); // Timeout 60s
+  try {
+    let url, headers, body, parseFn;
+    
+    if (o.proveedor === 'openai') {
+      url = 'https://api.openai.com/v1/chat/completions';
+      headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + o.apiKey };
+      body = { model: o.modelo, messages: [{ role: 'system', content: system }, { role: 'user', content: user }], max_tokens: 4096 };
+      parseFn = r => r.choices[0].message.content;
+    } else if (o.proveedor === 'anthropic') {
+      url = 'https://api.anthropic.com/v1/messages';
+      headers = { 'Content-Type': 'application/json', 'x-api-key': o.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+      body = { model: o.modelo, max_tokens: 4096, system: system, messages: [{ role: 'user', content: user }], top_p: 0.9, temperature: 0.1 };
+      parseFn = r => r.content[0].text;
+    } else { // gemini
+      url = 'https://generativelanguage.googleapis.com/v1beta/models/' + o.modelo + ':generateContent';
+      headers = { 'Content-Type': 'application/json', 'x-goog-api-key': o.apiKey };
+      body = { system_instruction: { parts: [{ text: system }] }, contents: [{ parts: [{ text: user }] }], safetySettings: [], generationConfig: { maxOutputTokens: 4096 } };
+      parseFn = r => r.candidates[0].content.parts[0].text;
+    }
+
+    const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error('Error API (' + res.status + '): ' + errText.substring(0, 100));
+    }
+    const data = await res.json();
+    return { texto: parseFn(data), uso: data.usage || {} };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function limpiarJSON(texto) {
+  let t = texto.trim();
+  t = t.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+  return t;
+}
+
+async function repararJSON(proveedor, modelo, apiKey, textoDefectuoso) {
+  const r = await llamarIA(
+    'Corrige el JSON devolviendo ÚNICAMENTE el objeto válido, sin texto adicional ni comillas triples.',
+    textoDefectuoso,
+    { proveedor: proveedor, modelo: modelo, apiKey: apiKey }
+  );
+  return JSON.parse(limpiarJSON(r.texto));
+}
+
+async function generar() {
+  const proveedor = $('provider').value;
+  let modelo = $('model').value;
+  if (modelo === '__otro__') {
+    const custom = prompt('Introduzca el identificador exacto del modelo:');
+    if (!custom) return;
+    modelo = custom;
+  }
+  const apiKey = localStorage.getItem(keyStorageKey());
+  if (!apiKey) return;
+
+  const userPrompt = 'Genera ficha técnica para:\n' +
+    'TIPO: ' + $('tipo').value + '\n' +
+    'TALLA: ' + $('talla').value + '\n' +
+    'DETALLE: ' + $('detalle').value + '\n' +
+    'SPECIFICACION: ' + $('spec').value.trim();
+
+  $('resultCard').style.display = 'block';
+  $('spinner').style.display = 'block';
+  $('result').textContent = '';
+  $('exportBar').style.display = 'none';
+  $('costInfo').textContent = '';
+  $('btnGen').disabled = true;
+  $('resultCard').scrollIntoView({ behavior: 'smooth' });
+
+  try {
+    let resp = await llamarIA(SYSTEM_PROMPT, userPrompt, { proveedor: proveedor, modelo: modelo, apiKey: apiKey });
+    let datos;
+    try {
+      datos = JSON.parse(limpiarJSON(resp.texto));
+    } catch (e) {
+      datos = await repararJSON(proveedor, modelo, apiKey, resp.texto);
+    }
+    ultimoResultado = { json: datos, raw: resp.texto, uso: resp.uso, modelo: modelo };
+    renderizar(datos);
+    calcularCoste(resp.uso, modelo);
+    $('exportBar').style.display = 'flex';
+  } catch (err) {
+    $('result').innerHTML = '<span style="color:#c0392b">❌ Error: ' + (err.name === 'AbortError' ? 'Tiempo de espera excedido' : err.message) + '</span>';
+  } finally {
+    $('spinner').style.display = 'none';
+    validar();
+  }
+}
+
+function renderizar(d) {
+  const filas = (d.piezas || []).map(p => 
+    '<tr>' +
+    '<td>' + escapeHtml(p.nombre) + '</td>' +
+    '<td>' + p.cantidad + '</td>' +
+    '<td>' + (p.medidas_clave_cm ? p.medidas_clave_cm.ancho + ' × ' + p.medidas_clave_cm.largo : '-') + '</td>' +
+    '<td>' + escapeHtml(p.notas_patronaje || '') + '</td>' +
+    '</tr>'
+  ).join('');
+  
+  const justificacion = d.justificacion_tecnica || 'No especificada';
+  
+  $('result').innerHTML = 
+    '<h3 style="color:#8b6f47">📐 ' + escapeHtml((d.ficha_tecnica && d.ficha_tecnica.prenda) || 'Sin datos') + ' — Talla ' + escapeHtml((d.ficha_tecnica && d.ficha_tecnica.talla) || '') + '</h3>' +
+    '<p><strong>Tejido asumido:</strong> ' + escapeHtml((d.ficha_tecnica && d.ficha_tecnica.tejido_asumido) || 'No especificado') + '</p>' +
+    '<table><thead><tr><th>Pieza</th><th>Cant.</th><th>Medidas (cm)</th><th>Notas</th></tr></thead><tbody>' + filas + '</tbody></table>' +
+    '<h4>Justificación técnica</h4>' +
+    '<div id="justif"></div>' +
+    '<h4>Orden de corte recomendado</h4>' +
+    '<ul>' + (d.orden_corte_recomendado || []).map(o => '<li>' + escapeHtml(o) + '</li>').join('') + '</ul>';
+  
+  // Renderizar Markdown de la justificación
+  document.getElementById('justif').innerHTML = marked.parse(justificacion);
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function calcularCoste(uso, modelo) {
+  const p = PRECIOS[modelo];
+  if (!uso || !p) {
+    $('costInfo').textContent = 'Coste no disponible para este modelo.';
+    return;
+  }
+  const tin = uso.input_tokens || uso.prompt_tokens || 0;
+  const tout = uso.output_tokens || uso.completion_tokens || 0;
+  const coste = (tin / 1e6) * p.in + (tout / 1e6) * p.out;
+  $('costInfo').textContent = 'Tokens: ' + tin.toLocaleString() + ' entrada / ' + tout.toLocaleString() + ' salida · Coste aprox: $' + coste.toFixed(4);
+}
+
+function copiarResultado() {
+  navigator.clipboard.writeText(JSON.stringify(ultimoResultado.json, null, 2))
+    .then(() => alert('JSON copiado al portapapeles'))
+    .catch(() => alert('Error al copiar'));
+}
+
+function exportarPDF() {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('ModaPatron IA — Ficha Técnica', 14, 18);
+    doc.setFontSize(10);
+    
+    const jsonStr = JSON.stringify(ultimoResultado.json, null, 2);
+    const lineas = jsonStr.split('\n');
+    let y = 28;
+    
+    for (let i = 0; i < lineas.length && i < 70; i++) {
+      const linea = lineas[i];
+      const text = linea.length > 95 ? linea.substring(0, 92) + '...' : linea;
+      doc.text(text, 14, y);
+      y += 5;
+    }
+    doc.save('patron_ia.pdf');
+  } catch (e) {
+    alert('Error al generar PDF: ' + e.message);
+  }
+}
+
+// Inicializar
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GenIm · Generador de imágenes fotorrealistas</title>
+
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     TOKENS DE DISEÑO
+     Paleta clara, predominancia de azules, bordes suaves, esquinas
+     redondeadas. Pensada para un entorno educativo universitario.
+     ══════════════════════════════════════════════════════════════════════ */
+  :root {
+    --bg:            #F4F8FC;
+    --surface:       #FFFFFF;
+    --surface-alt:   #EFF6FF;
+    --surface-alt-2: #F8FBFF;
+    --border:        #DCE7F2;
+    --border-strong: #B9D2E8;
+    --primary:       #2563EB;
+    --primary-dark:  #1D4ED8;
+    --primary-light: #DBEAFE;
+    --text:          #0F1E33;
+    --text-muted:    #5B6B82;
+    --text-faint:    #8AA0B8;
+    --success:       #157F3C;
+    --success-bg:    #E7F6EC;
+    --error:         #C0271F;
+    --error-bg:      #FCEAE9;
+    --info-bg:       #EAF2FE;
+    --radius-lg:     14px;
+    --radius-md:     10px;
+    --radius-sm:     7px;
+    --shadow:        0 1px 2px rgba(15,30,51,.04), 0 6px 20px rgba(15,30,51,.06);
+    --shadow-sm:     0 1px 2px rgba(15,30,51,.05);
+    --font:          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                      "Helvetica Neue", Arial, sans-serif;
+    --font-mono:     ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+                      monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* ── Cabecera ────────────────────────────────────────────────────────── */
+  header.app-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .app-mark {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--primary) 0%, #4F8DFB 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(37,99,235,.30);
+  }
+
+  h1.app-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .app-subtitle {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 14.5px;
+  }
+
+  /* ── Tarjetas de sección ─────────────────────────────────────────────── */
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 24px 26px;
+    margin-bottom: 20px;
+  }
+
+  section.card h2 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 650;
+    color: var(--text);
+  }
+
+  section.card > .section-desc {
+    margin: 0 0 18px;
+    color: var(--text-muted);
+    font-size: 13.7px;
+  }
+
+  .field-group + .field-group { margin-top: 18px; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  @media (max-width: 620px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    header.app-header { flex-wrap: wrap; }
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 13.6px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .field-hint {
+    font-size: 12.6px;
+    color: var(--text-faint);
+    margin: 5px 0 0;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14.3px;
+    color: var(--text);
+    background: var(--surface-alt-2);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.5;
+    font-family: inherit;
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  button:focus-visible {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.18);
+    background: #fff;
+  }
+
+  input:hover, select:hover, textarea:hover { border-color: var(--primary); }
+
+  select { cursor: pointer; }
+
+  textarea#instruccionesSistema { min-height: 150px; }
+  textarea#ideaInicial          { min-height: 130px; }
+  textarea#promptGenerado       { min-height: 130px; background: var(--surface-alt); }
+
+  /* ── Botones ─────────────────────────────────────────────────────────── */
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, transform .05s, opacity .15s;
+  }
+
+  button:active { transform: translateY(1px); }
+
+  button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37,99,235,.28);
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+
+  .btn-secondary {
+    background: #fff;
+    color: var(--primary-dark);
+    border-color: var(--border-strong);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--surface-alt);
+    border-color: var(--primary);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: var(--border);
+    font-weight: 500;
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    color: var(--error);
+    border-color: var(--error);
+    background: var(--error-bg);
+  }
+
+  .btn-block { width: 100%; }
+  .btn-lg { padding: 13px 20px; font-size: 15.5px; }
+
+  .field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  /* ── Botón principal de generación ──────────────────────────────────── */
+  .generate-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn-generate {
+    background: linear-gradient(135deg, var(--primary) 0%, #1E4FD1 100%);
+    color: #fff;
+    padding: 15px 24px;
+    font-size: 16px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 6px 18px rgba(37,99,235,.32);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-generate:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1E4FD1 0%, var(--primary-dark) 100%);
+  }
+
+  .spinner {
+    width: 17px;
+    height: 17px;
+    border: 2.5px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+    flex-shrink: 0;
+  }
+  .spinner.active { display: inline-block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Estado / mensajes ───────────────────────────────────────────────── */
+  #statusRegion {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13.8px;
+    border: 1px solid transparent;
+    min-height: 0;
+  }
+  #statusRegion.hidden { display: none; }
+  #statusRegion.status-info    { background: var(--info-bg);    border-color: #BFDBFE; color: #1E4AA8; }
+  #statusRegion.status-success { background: var(--success-bg); border-color: #B7E4C4; color: var(--success); }
+  #statusRegion.status-error   { background: var(--error-bg);   border-color: #F3C6C3; color: var(--error); }
+
+  #statusRegion .status-icon { flex-shrink: 0; font-size: 15px; line-height: 1.4; }
+  #statusRegion .status-text { flex: 1; }
+  #statusRegion .status-text strong { display: block; margin-bottom: 2px; }
+
+  /* ── Prompt generado ─────────────────────────────────────────────────── */
+  .prompt-box-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+
+  /* ── Imagen generada ─────────────────────────────────────────────────── */
+  .image-frame {
+    background: var(--surface-alt-2);
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 14px;
+  }
+  .image-frame.has-image {
+    border-style: solid;
+    border-color: var(--border);
+    padding: 12px;
+    background: #fff;
+  }
+  .image-frame img {
+    max-width: 100%;
+    max-height: 560px;
+    border-radius: var(--radius-sm);
+    display: block;
+  }
+
+  .image-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .filename-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+  }
+  .filename-inline label {
+    margin: 0;
+    white-space: nowrap;
+    font-size: 12.8px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .filename-inline input { flex: 1; }
+
+  .image-meta {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  /* ── Info / cómo funciona ────────────────────────────────────────────── */
+  .how-it-works ol {
+    margin: 0;
+    padding-left: 22px;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .how-it-works li { margin-bottom: 8px; }
+  .how-it-works li:last-child { margin-bottom: 0; }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 16px 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .flow-step {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 13px;
+    color: var(--primary-dark);
+    white-space: nowrap;
+  }
+  .flow-arrow { color: var(--text-faint); font-weight: 400; }
+
+  /* ── Seguridad / credenciales ────────────────────────────────────────── */
+  .security-note {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+  .security-note strong { color: var(--text); }
+
+  .key-input-row {
+    display: flex;
+    gap: 8px;
+  }
+  .key-input-row input { flex: 1; }
+  .btn-toggle-visibility {
+    background: #fff;
+    border: 1px solid var(--border-strong);
+    color: var(--text-muted);
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .btn-toggle-visibility:hover { background: var(--surface-alt); }
+
+  /* ── Footer ──────────────────────────────────────────────────────────── */
+  footer.app-footer {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+    margin-top: 30px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  footer.app-footer p { margin: 3px 0; }
+  footer.app-footer a { color: var(--text-faint); }
+
+  /* ── Utilidades ──────────────────────────────────────────────────────── */
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .char-count {
+    font-size: 11.5px;
+    color: var(--text-faint);
+    text-align: right;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ════════════════════════════════════════════════════════════════
+       CABECERA
+       ════════════════════════════════════════════════════════════════ -->
+  <header class="app-header">
+    <div class="app-mark" aria-hidden="true">GI</div>
+    <div>
+      <h1 class="app-title">GenIm</h1>
+      <p class="app-subtitle">Ideas convertidas en fotografías hiperrealistas con Claude y fal.ai</p>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECCIÓN: CÓMO FUNCIONA
+       ════════════════════════════════════════════════════════════════ -->
+  <section class="card how-it-works" aria-labelledby="howTitle">
+    <h2 id="howTitle">¿Cómo funciona GenIm?</h2>
+    <p class="section-desc">GenIm combina dos inteligencias artificiales distintas, cada una especializada en una tarea.</p>
+    <ol>
+      <li>Escribes las <strong>instrucciones del sistema</strong> que guiarán a Claude.</li>
+      <li>Describes tu <strong>idea inicial</strong>: la prenda o escena que quieres generar.</li>
+      <li><strong>Claude</strong> transforma esa idea en un prompt fotográfico detallado y técnico, en inglés.</li>
+      <li>Ese prompt se envía automáticamente al modelo de generación de imágenes de <strong>fal.ai</strong> (FLUX).</li>
+      <li>La imagen resultante se muestra en la aplicación, lista para descargar.</li>
+    </ol>
+    <div class="flow-diagram" aria-hidden="true">
+      <span class="flow-step">Tu idea</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Claude</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Prompt mejorado</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">fal.ai (FLUX)</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Imagen final</span>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECCIÓN: CLAVES DE API
+       ════════════════════════════════════════════════════════════════ -->
+  <section class="card" aria-labelledby="apiTitle">
+    <h2 id="apiTitle">Claves de acceso a las API</h2>
+    <p class="section-desc">GenIm se ejecuta enteramente en tu navegador: tus claves solo se usan para llamar directamente a Anthropic y a fal.ai desde este mismo dispositivo, y no se envían a ningún otro servidor.</p>
+
+    <div class="field-group">
+      <label for="anthropicKey">Clave API de Anthropic</label>
+      <div class="key-input-row">
+        <input type="password" id="anthropicKey" autocomplete="off" spellcheck="false"
+               placeholder="sk-ant-..." aria-describedby="anthropicKeyHint">
+        <button type="button" class="btn-toggle-visibility" data-target="anthropicKey" aria-label="Mostrar u ocultar la clave de Anthropic">Mostrar</button>
+      </div>
+      <p class="field-hint" id="anthropicKeyHint">Obtén tu clave en console.anthropic.com</p>
+    </div>
+
+    <div class="field-group">
+      <label for="falKey">Clave API de fal.ai</label>
+      <div class="key-input-row">
+        <input type="password" id="falKey" autocomplete="off" spellcheck="false"
+               placeholder="Clave de fal.ai..." aria-describedby="falKeyHint">
+        <button type="button" class="btn-toggle-visibility" data-target="falKey" aria-label="Mostrar u ocultar la clave de fal.ai">Mostrar</button>
+      </div>
+      <p class="field-hint" id="falKeyHint">Obtén tu clave en fal.ai/dashboard</p>
+    </div>
+
+    <div class="security-note">
+      <strong>Nota de seguridad:</strong> al ser una aplicación de un solo archivo sin servidor propio,
+      las claves se usan directamente desde tu navegador para llamar a las API de Anthropic y fal.ai.
+      No se guardan en ningún almacenamiento permanente, no se incluyen en los archivos descargados
+      (prompts ni imagen) y no aparecen en los mensajes de error. Aun así, evita compartir este archivo
+      ya relleno y no lo publiques en sitios públicos con las claves escritas.
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECCIÓN: MODELO Y PARÁMETROS DE GENERACIÓN
+       ════════════════════════════════════════════════════════════════ -->
+  <section class="card" aria-labelledby="modelTitle">
+    <h2 id="modelTitle">Elegir modelo</h2>
+    <p class="section-desc">Selecciona el modelo de Claude que redactará el prompt y el modelo de fal.ai que generará la imagen.</p>
+
+    <div class="grid-2">
+      <div class="field-group">
+        <label for="modeloClaude">Modelo de Claude (Anthropic)</label>
+        <select id="modeloClaude">
+          <optgroup label="Anthropic / Claude">
+            <option value="claude-opus-4-5">claude-opus-4-5</option>
+            <option value="claude-sonnet-4-5" selected>claude-sonnet-4-5</option>
+            <option value="claude-haiku-4-5">claude-haiku-4-5</option>
+          </optgroup>
+        </select>
+        <p class="field-hint">Sonnet ofrece un buen equilibrio entre calidad de redacción y coste/velocidad.</p>
+      </div>
+
+      <div class="field-group">
+        <label for="modeloFal">Modelo de generación de imágenes</label>
+        <select id="modeloFal">
+          <optgroup label="fal.ai">
+            <option value="fal-ai/flux-pro/v1.1" selected>FLUX Pro v1.1 (fal-ai/flux-pro/v1.1)</option>
+          </optgroup>
+        </select>
+        <p class="field-hint">Único modelo de imagen incluido en el cuaderno original.</p>
+      </div>
+    </div>
+
+    <div class="grid-2 field-group">
+      <div>
+        <label for="numTokens">Número de tokens</label>
+        <input type="number" id="numTokens" min="100" max="8192" step="1" value="4096"
+               aria-describedby="numTokensHint">
+        <p class="field-hint" id="numTokensHint">Máximo de tokens que Claude puede usar al redactar el prompt (por defecto 4096).</p>
+      </div>
+
+      <div>
+        <label for="pasosInferencia">Número de pasos de inferencia</label>
+        <select id="pasosInferencia" aria-describedby="pasosHint">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="30">30</option>
+          <option value="40">40</option>
+        </select>
+        <p class="field-hint" id="pasosHint">Más pasos = más detalle, pero generación más lenta y con mayor coste.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECCIÓN: CONFIGURACIÓN DEL PROMPT
+       ════════════════════════════════════════════════════════════════ -->
+  <section class="card" aria-labelledby="promptTitle">
+    <h2 id="promptTitle">Configuración del prompt</h2>
+    <p class="section-desc">Estas instrucciones se envían a Claude para transformar tu idea en un prompt fotográfico detallado.</p>
+
+    <div class="field-group">
+      <div class="field-label-row">
+        <label for="instruccionesSistema">Instrucciones del sistema</label>
+        <button type="button" class="btn-ghost" data-clear="instruccionesSistema">Borrar</button>
+      </div>
+      <textarea id="instruccionesSistema" spellcheck="false"></textarea>
+      <p class="field-hint">Define el papel que adopta Claude y el estilo del prompt que debe redactar.</p>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label-row">
+        <label for="ideaInicial">Idea inicial</label>
+        <button type="button" class="btn-ghost" data-clear="ideaInicial">Borrar</button>
+      </div>
+      <textarea id="ideaInicial" spellcheck="false"
+        placeholder="Describe la prenda o escena que quieres generar. Por ejemplo: tipo de prenda, tejido, color, silueta, iluminación, estilo fotográfico..."></textarea>
+      <p class="field-hint" id="ideaCharCount">0 caracteres</p>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECCIÓN: ACCIÓN PRINCIPAL Y ESTADO
+       ════════════════════════════════════════════════════════════════ -->
+  <section class="card" aria-labelledby="actionTitle">
+    <h2 id="actionTitle" class="visually-hidden">Generar imagen</h2>
+    <div class="generate-row">
+      <button type="button" id="btnGenerar" class="btn-generate btn-block">
+        <span class="spinner" id="spinner" aria-hidden="true"></span>
+        <span id="btnGenerarLabel">Generar imagen</span>
+      </button>
+      <div id="statusRegion" class="hidden" role="status" aria-live="polite">
+        <span class="status-icon" id="statusIcon" aria-hidden="true"></span>
+        <span class="status-text" id="statusText"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECCIÓN: PROMPT GENERADO POR CLAUDE
+       ════════════════════════════════════════════════════════════════ -->
+  <section class="card" aria-labelledby="promptGenTitle">
+    <div class="prompt-box-label">
+      <h2 id="promptGenTitle" style="margin:0;">Prompt generado por Claude</h2>
+      <span class="badge">Solo lectura</span>
+    </div>
+    <p class="section-desc">Así queda tu idea después de que Claude la reescriba. Este es el texto exacto que se envía a fal.ai.</p>
+    <textarea id="promptGenerado" readonly aria-readonly="true"
+      placeholder="Aquí aparecerá el prompt técnico en inglés generado por Claude, una vez que pulses «Generar imagen»."></textarea>
+
+    <div class="field-group" style="margin-top:16px;">
+      <div class="field-label-row">
+        <label for="nombreTxt">Nombre del archivo TXT</label>
+      </div>
+      <div class="image-actions" style="margin-top:0;">
+        <div class="filename-inline">
+          <input type="text" id="nombreTxt" value="GenIm_prompts.txt">
+        </div>
+        <button type="button" class="btn-secondary" id="btnDescargarTxt">Descargar prompts (.TXT)</button>
+      </div>
+      <p class="field-hint">El archivo incluirá las instrucciones del sistema y la idea inicial, en UTF-8.</p>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECCIÓN: IMAGEN GENERADA
+       ════════════════════════════════════════════════════════════════ -->
+  <section class="card" aria-labelledby="imageTitle">
+    <h2 id="imageTitle">Imagen generada</h2>
+    <p class="section-desc">La fotografía resultante del modelo de fal.ai aparecerá aquí, conservando su relación de aspecto original.</p>
+
+    <div class="image-frame" id="imageFrame">
+      <span id="imagePlaceholder">La imagen generada aparecerá aquí.</span>
+    </div>
+
+    <div class="image-actions" id="imageActions" style="display:none;">
+      <div class="filename-inline">
+        <label for="nombrePng">Nombre del archivo</label>
+        <input type="text" id="nombrePng" value="GenIm_imagen.png">
+      </div>
+      <button type="button" class="btn-secondary" id="btnDescargarPng">Descargar imagen PNG</button>
+      <a href="#" id="enlaceAbrirImagen" target="_blank" rel="noopener noreferrer" class="btn-ghost" style="display:none; text-decoration:none;">Abrir imagen en una pestaña nueva</a>
+    </div>
+    <p class="image-meta" id="imageMeta"></p>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════════════════════════ -->
+  <footer class="app-footer">
+    <p>Rafael Puerto (<a href="mailto:r.puerto@umh.es">r.puerto@umh.es</a>)</p>
+    <p>Última modificación: 24/09/2026</p>
+  </footer>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   GenIm — Lógica de la aplicación
+   ────────────────────────────────────────────────────────────────────────
+   Este archivo reproduce, en un flujo web de navegador, el cuaderno Jupyter
+   original "Creación de imágenes fotorrealistas con IA":
+
+     1. Claude (Anthropic) recibe unas instrucciones de sistema y la idea
+        inicial del usuario, y devuelve un prompt fotográfico detallado
+        en inglés.
+     2. Ese prompt se envía al modelo FLUX de fal.ai, que genera la imagen.
+     3. La imagen se muestra y puede descargarse.
+
+   Todas las llamadas a las API se hacen directamente desde el navegador
+   (no hay servidor backend), igual que en el cuaderno original las claves
+   se leían de los "Secrets" de Colab: aquí el usuario las introduce en los
+   campos correspondientes y solo se usan en memoria, nunca se persisten.
+   ════════════════════════════════════════════════════════════════════════ */
+
+(() => {
+  "use strict";
+
+  /* ── Configuración derivada del cuaderno original ─────────────────────
+     Estos valores (modelos, endpoint de fal.ai, parámetros fijos y texto
+     del sistema por defecto) proceden literalmente del cuaderno .ipynb
+     proporcionado. No se han inventado modelos ni parámetros nuevos. */
+  const CONFIG = {
+    ANTHROPIC_VERSION: "2023-06-01",
+    ANTHROPIC_ENDPOINT: "https://api.anthropic.com/v1/messages",
+    FAL_ENDPOINT_BASE: "https://fal.run/",
+    // Parámetros de fal.ai fijados por el cuaderno original (no editables
+    // desde la interfaz, para mantener fidelidad con el flujo probado):
+    FAL_IMAGE_SIZE: "portrait_4_3",
+    FAL_ENABLE_SAFETY_CHECKER: true,
+    FAL_SYNC_MODE: true,
+    // Plantilla del mensaje de usuario enviado a Claude (igual que en el
+    // cuaderno: f"Mejora esta idea para realismo puro: {idea_usuario}")
+    USER_MESSAGE_PREFIX: "Mejora esta idea para realismo puro: ",
+    DEFAULT_SYSTEM_INSTRUCTIONS:
+`Eres un experto en fotografía comercial y texturas macro. Tu trabajo es transformar una idea simple en un prompt descriptivo para un modelo de difusión (FLUX). Enfócate en describir imperfecciones, texturas táctiles, poros, polvo, micro-detalles, configuración de cámara (ej. 85mm lens, f/1.4), iluminación natural y estilo documental. Evita palabras vacías como 'photorealistic' o 'hyperdetailed'; en su lugar, describe los detalles que hacen que algo sea real. La fotografía tiene que ser de cuerpo completo. Devuelve ÚNICAMENTE el prompt final en inglés.`,
+  };
+
+  /* ── Referencias a elementos del DOM ──────────────────────────────────── */
+  const el = {
+    anthropicKey: document.getElementById("anthropicKey"),
+    falKey: document.getElementById("falKey"),
+    modeloClaude: document.getElementById("modeloClaude"),
+    modeloFal: document.getElementById("modeloFal"),
+    numTokens: document.getElementById("numTokens"),
+    pasosInferencia: document.getElementById("pasosInferencia"),
+    instruccionesSistema: document.getElementById("instruccionesSistema"),
+    ideaInicial: document.getElementById("ideaInicial"),
+    ideaCharCount: document.getElementById("ideaCharCount"),
+    btnGenerar: document.getElementById("btnGenerar"),
+    btnGenerarLabel: document.getElementById("btnGenerarLabel"),
+    spinner: document.getElementById("spinner"),
+    statusRegion: document.getElementById("statusRegion"),
+    statusIcon: document.getElementById("statusIcon"),
+    statusText: document.getElementById("statusText"),
+    promptGenerado: document.getElementById("promptGenerado"),
+    nombreTxt: document.getElementById("nombreTxt"),
+    btnDescargarTxt: document.getElementById("btnDescargarTxt"),
+    imageFrame: document.getElementById("imageFrame"),
+    imagePlaceholder: document.getElementById("imagePlaceholder"),
+    imageActions: document.getElementById("imageActions"),
+    imageMeta: document.getElementById("imageMeta"),
+    nombrePng: document.getElementById("nombrePng"),
+    btnDescargarPng: document.getElementById("btnDescargarPng"),
+    enlaceAbrirImagen: document.getElementById("enlaceAbrirImagen"),
+  };
+
+  /* Estado en memoria: la imagen generada (para poder descargarla después
+     de mostrarla) y un indicador de solicitud en curso. */
+  const state = {
+    imageUrl: null,
+    isGenerating: false,
+  };
+
+  /* ══════════════════════════════════════════════════════════════════════
+     INICIALIZACIÓN
+     ══════════════════════════════════════════════════════════════════════ */
+  function initializeApplication() {
+    el.instruccionesSistema.value = CONFIG.DEFAULT_SYSTEM_INSTRUCTIONS;
+    updateCharCount();
+
+    el.ideaInicial.addEventListener("input", updateCharCount);
+
+    // Botones "Borrar" de los dos campos de texto
+    document.querySelectorAll("[data-clear]").forEach((btn) => {
+      btn.addEventListener("click", () => clearInput(btn.dataset.clear));
+    });
+
+    // Mostrar/ocultar visibilidad de las claves de API
+    document.querySelectorAll(".btn-toggle-visibility").forEach((btn) => {
+      btn.addEventListener("click", () => toggleKeyVisibility(btn));
+    });
+
+    el.btnGenerar.addEventListener("click", runGenerationWorkflow);
+    el.btnDescargarTxt.addEventListener("click", downloadPromptsAsTxt);
+    el.btnDescargarPng.addEventListener("click", downloadImageAsPng);
+
+    // Validación en vivo del número de tokens
+    el.numTokens.addEventListener("blur", () => {
+      const clamped = clampTokens(el.numTokens.value);
+      el.numTokens.value = clamped;
+    });
+  }
+
+  function updateCharCount() {
+    const n = el.ideaInicial.value.length;
+    el.ideaCharCount.textContent = `${n} carácter${n === 1 ? "" : "es"}`;
+  }
+
+  function toggleKeyVisibility(btn) {
+    const input = document.getElementById(btn.dataset.target);
+    const isHidden = input.type === "password";
+    input.type = isHidden ? "text" : "password";
+    btn.textContent = isHidden ? "Ocultar" : "Mostrar";
+  }
+
+  function clearInput(id) {
+    const field = document.getElementById(id);
+    field.value = "";
+    field.focus();
+    if (id === "ideaInicial") updateCharCount();
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     VALIDACIÓN
+     ══════════════════════════════════════════════════════════════════════ */
+  function clampTokens(rawValue) {
+    let n = parseInt(rawValue, 10);
+    if (Number.isNaN(n)) n = 4096;
+    if (n < 100) n = 100;
+    if (n > 8192) n = 8192;
+    return n;
+  }
+
+  function validateInputs() {
+    const errors = [];
+
+    if (!el.anthropicKey.value.trim()) {
+      errors.push("Falta la clave API de Anthropic.");
+    }
+    if (!el.falKey.value.trim()) {
+      errors.push("Falta la clave API de fal.ai.");
+    }
+    if (!el.instruccionesSistema.value.trim()) {
+      errors.push("Las instrucciones del sistema no pueden estar vacías.");
+    }
+    if (!el.ideaInicial.value.trim()) {
+      errors.push("Escribe una idea inicial antes de generar la imagen.");
+    }
+
+    const tokens = parseInt(el.numTokens.value, 10);
+    if (Number.isNaN(tokens) || tokens < 100 || tokens > 8192) {
+      errors.push("El número de tokens debe ser un valor numérico entre 100 y 8192.");
+    }
+
+    const pasosValidos = ["10", "20", "30", "40"];
+    if (!pasosValidos.includes(el.pasosInferencia.value)) {
+      errors.push("El número de pasos de inferencia no es válido.");
+    }
+
+    return { valid: errors.length === 0, errors };
+  }
+
+  function getSelectedModel() {
+    return {
+      claudeModel: el.modeloClaude.value,
+      falModel: el.modeloFal.value,
+    };
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ESTADO / MENSAJES VISIBLES
+     ══════════════════════════════════════════════════════════════════════ */
+  function showStatus(message, type = "info", title = null) {
+    el.statusRegion.classList.remove("hidden", "status-info", "status-success", "status-error");
+    el.statusRegion.classList.add(`status-${type}`);
+
+    const icons = { info: "ℹ", success: "✓", error: "⚠" };
+    el.statusIcon.textContent = icons[type] || "ℹ";
+
+    const titles = { info: "Estado:", success: "Completado:", error: "Error:" };
+    const prefix = title || titles[type] || "";
+
+    el.statusText.innerHTML = "";
+    if (prefix) {
+      const strong = document.createElement("strong");
+      strong.textContent = prefix;
+      el.statusText.appendChild(strong);
+    }
+    const span = document.createElement("span");
+    span.textContent = message;
+    el.statusText.appendChild(span);
+  }
+
+  function showError(message) {
+    showStatus(message, "error");
+  }
+
+  function hideStatus() {
+    el.statusRegion.classList.add("hidden");
+  }
+
+  function setGeneratingState(isGenerating) {
+    state.isGenerating = isGenerating;
+    el.btnGenerar.disabled = isGenerating;
+    el.spinner.classList.toggle("active", isGenerating);
+    el.btnGenerarLabel.textContent = isGenerating ? "Generando…" : "Generar imagen";
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     PASO 1 — CLAUDE: mejorar la idea inicial y convertirla en un prompt
+     fotográfico técnico en inglés (equivalente a generar_prompt_hiperrealista
+     en el cuaderno original).
+     ══════════════════════════════════════════════════════════════════════ */
+  async function improvePromptWithClaude({ apiKey, model, systemInstructions, ideaInicial, maxTokens }) {
+    let response;
+    try {
+      response = await fetch(CONFIG.ANTHROPIC_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": CONFIG.ANTHROPIC_VERSION,
+          // Necesario para permitir llamadas directas desde el navegador.
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: maxTokens,
+          system: systemInstructions,
+          messages: [
+            { role: "user", content: `${CONFIG.USER_MESSAGE_PREFIX}${ideaInicial}` },
+          ],
+        }),
+      });
+    } catch (networkError) {
+      throw new Error(
+        "No se ha podido contactar con la API de Anthropic. Comprueba tu conexión a internet e inténtalo de nuevo."
+      );
+    }
+
+    if (!response.ok) {
+      let detail = "";
+      try {
+        const errJson = await response.json();
+        detail = errJson?.error?.message || "";
+      } catch (_) { /* la respuesta no era JSON válido */ }
+
+      if (response.status === 401) {
+        throw new Error("La clave API de Anthropic no es válida. Revísala e inténtalo de nuevo.");
+      }
+      if (response.status === 429) {
+        throw new Error("Se ha alcanzado el límite de solicitudes de Anthropic. Espera unos segundos y vuelve a intentarlo.");
+      }
+      throw new Error(
+        `Anthropic ha devuelto un error (código ${response.status})${detail ? ": " + detail : "."}`
+      );
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (_) {
+      throw new Error("La respuesta de Anthropic no tiene un formato válido.");
+    }
+
+    const text = data?.content?.[0]?.text;
+    if (!text || typeof text !== "string") {
+      throw new Error("Claude no ha devuelto ningún texto de prompt. Inténtalo de nuevo.");
+    }
+
+    return text.trim();
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     PASO 2 — fal.ai: enviar el prompt optimizado al modelo FLUX y obtener
+     la imagen generada (equivalente a solicitar_imagen_fal en el cuaderno).
+     Se usa el endpoint síncrono https://fal.run/<modelo>, que con
+     sync_mode=true devuelve el resultado final directamente, sin colas.
+     ══════════════════════════════════════════════════════════════════════ */
+  async function generateImageWithFal({ apiKey, falModel, prompt, steps }) {
+    const endpoint = CONFIG.FAL_ENDPOINT_BASE + falModel;
+
+    let response;
+    try {
+      response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Key ${apiKey}`,
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          image_size: CONFIG.FAL_IMAGE_SIZE,
+          num_inference_steps: steps,
+          enable_safety_checker: CONFIG.FAL_ENABLE_SAFETY_CHECKER,
+          sync_mode: CONFIG.FAL_SYNC_MODE,
+        }),
+      });
+    } catch (networkError) {
+      throw new Error(
+        "No se ha podido contactar con la API de fal.ai. Comprueba tu conexión a internet e inténtalo de nuevo."
+      );
+    }
+
+    if (!response.ok) {
+      let detail = "";
+      try {
+        const errJson = await response.json();
+        detail = errJson?.detail
+          ? (typeof errJson.detail === "string" ? errJson.detail : JSON.stringify(errJson.detail))
+          : "";
+      } catch (_) { /* la respuesta no era JSON válido */ }
+
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("La clave API de fal.ai no es válida o no tiene permisos suficientes.");
+      }
+      if (response.status === 429) {
+        throw new Error("Se ha alcanzado el límite de solicitudes de fal.ai. Espera unos segundos y vuelve a intentarlo.");
+      }
+      throw new Error(
+        `fal.ai ha devuelto un error (código ${response.status})${detail ? ": " + detail : "."}`
+      );
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (_) {
+      throw new Error("La respuesta de fal.ai no tiene un formato válido.");
+    }
+
+    // El cuaderno original lee resultado["images"][0]["url"]; se añade una
+    // comprobación defensiva por si la forma de la respuesta variase.
+    const url = data?.images?.[0]?.url || data?.data?.images?.[0]?.url;
+    if (!url) {
+      throw new Error("fal.ai no ha devuelto ninguna URL de imagen. Inténtalo de nuevo.");
+    }
+
+    return { url, raw: data };
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     MOSTRAR RESULTADOS
+     ══════════════════════════════════════════════════════════════════════ */
+  function displayGeneratedPrompt(text) {
+    el.promptGenerado.value = text;
+  }
+
+  function displayGeneratedImage(url, meta) {
+    state.imageUrl = url;
+
+    el.imageFrame.classList.add("has-image");
+    el.imageFrame.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Fotografía generada por GenIm a partir de la idea inicial descrita";
+    el.imageFrame.appendChild(img);
+
+    el.imageActions.style.display = "flex";
+    el.enlaceAbrirImagen.href = url;
+
+    if (meta) {
+      const parts = [];
+      if (meta.width && meta.height) parts.push(`${meta.width}×${meta.height}px`);
+      if (meta.seed !== undefined) parts.push(`semilla: ${meta.seed}`);
+      el.imageMeta.textContent = parts.join(" · ");
+    } else {
+      el.imageMeta.textContent = "";
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     FLUJO PRINCIPAL — orquesta el botón "Generar imagen"
+     ══════════════════════════════════════════════════════════════════════ */
+  async function runGenerationWorkflow() {
+    if (state.isGenerating) return;
+
+    const { valid, errors } = validateInputs();
+    if (!valid) {
+      showError(errors.join(" "));
+      return;
+    }
+
+    const { claudeModel, falModel } = getSelectedModel();
+    const maxTokens = clampTokens(el.numTokens.value);
+    const steps = parseInt(el.pasosInferencia.value, 10);
+    const systemInstructions = el.instruccionesSistema.value.trim();
+    const ideaInicial = el.ideaInicial.value.trim();
+    const anthropicKey = el.anthropicKey.value.trim();
+    const falKey = el.falKey.value.trim();
+
+    setGeneratingState(true);
+    showStatus("Preparando la solicitud…", "info");
+
+    try {
+      // ── Paso 1: Claude mejora la idea ──────────────────────────────────
+      showStatus("Mejorando la idea con Claude…", "info");
+      const promptGenerado = await improvePromptWithClaude({
+        apiKey: anthropicKey,
+        model: claudeModel,
+        systemInstructions,
+        ideaInicial,
+        maxTokens,
+      });
+      displayGeneratedPrompt(promptGenerado);
+
+      // ── Paso 2: fal.ai genera la imagen ─────────────────────────────────
+      showStatus("Generando la imagen con fal.ai… esto puede tardar hasta un par de minutos.", "info");
+      const { url, raw } = await generateImageWithFal({
+        apiKey: falKey,
+        falModel,
+        prompt: promptGenerado,
+        steps,
+      });
+
+      const primeraImagen = raw?.images?.[0] || {};
+      displayGeneratedImage(url, {
+        width: primeraImagen.width,
+        height: primeraImagen.height,
+        seed: raw?.seed,
+      });
+
+      showStatus("La imagen se ha generado correctamente.", "success");
+    } catch (err) {
+      showError(err.message || "No se ha podido generar la imagen. Comprueba la configuración de la API y vuelve a intentarlo.");
+    } finally {
+      setGeneratingState(false);
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     DESCARGA — PROMPTS EN TXT
+     ══════════════════════════════════════════════════════════════════════ */
+  function downloadPromptsAsTxt() {
+    const sistema = el.instruccionesSistema.value;
+    const idea = el.ideaInicial.value;
+
+    if (!sistema.trim() && !idea.trim()) {
+      showError("No hay contenido que descargar: ambos campos están vacíos.");
+      return;
+    }
+
+    const separador = "========================================";
+    const contenido =
+      `${separador}\nINSTRUCCIONES DEL SISTEMA\n${separador}\n\n${sistema}\n\n\n` +
+      `${separador}\nIDEA INICIAL\n${separador}\n\n${idea}\n`;
+
+    let nombre = el.nombreTxt.value.trim() || "GenIm_prompts.txt";
+    if (!nombre.toLowerCase().endsWith(".txt")) nombre += ".txt";
+
+    // Codificación UTF-8 explícita para preservar tildes y caracteres especiales.
+    const blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
+    triggerDownload(blob, nombre);
+    showStatus("Archivo de prompts descargado.", "success");
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     DESCARGA — IMAGEN EN PNG
+     ══════════════════════════════════════════════════════════════════════ */
+  async function downloadImageAsPng() {
+    if (!state.imageUrl) {
+      showError("Todavía no se ha generado ninguna imagen.");
+      return;
+    }
+
+    let nombre = el.nombrePng.value.trim() || "GenIm_imagen.png";
+    if (!nombre.toLowerCase().endsWith(".png")) nombre += ".png";
+
+    try {
+      // Si la URL ya es un data URI en base64, se puede convertir
+      // directamente sin necesidad de una petición de red adicional.
+      if (state.imageUrl.startsWith("data:")) {
+        const blob = await dataUriToPngBlob(state.imageUrl);
+        triggerDownload(blob, nombre);
+        showStatus("Imagen descargada correctamente.", "success");
+        return;
+      }
+
+      // En otro caso, se intenta descargar la imagen remota y convertirla
+      // a PNG mediante un lienzo (canvas) si no lo es ya.
+      const response = await fetch(state.imageUrl);
+      if (!response.ok) throw new Error("No se ha podido descargar la imagen.");
+      const originalBlob = await response.blob();
+      const pngBlob = await blobToPngBlob(originalBlob);
+      triggerDownload(pngBlob, nombre);
+      showStatus("Imagen descargada correctamente.", "success");
+    } catch (err) {
+      // Origen cruzado (CORS) u otro problema de red: se ofrece una vía
+      // alternativa para que el usuario guarde la imagen manualmente.
+      el.enlaceAbrirImagen.style.display = "inline-block";
+      showError(
+        "No se ha podido descargar la imagen automáticamente debido a restricciones del navegador. Usa el enlace «Abrir imagen en una pestaña nueva» y guárdala manualmente con el botón derecho del ratón."
+      );
+    }
+  }
+
+  function dataUriToPngBlob(dataUri) {
+    return fetch(dataUri).then((r) => r.blob()).then((blob) => blobToPngBlob(blob));
+  }
+
+  function blobToPngBlob(blob) {
+    if (blob.type === "image/png") return Promise.resolve(blob);
+
+    return new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(blob);
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob((pngBlob) => {
+            URL.revokeObjectURL(objectUrl);
+            if (pngBlob) resolve(pngBlob);
+            else reject(new Error("No se ha podido convertir la imagen a PNG."));
+          }, "image/png");
+        } catch (e) {
+          URL.revokeObjectURL(objectUrl);
+          reject(e);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("No se ha podido cargar la imagen para convertirla."));
+      };
+      img.src = objectUrl;
+    });
+  }
+
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /* ── Arranque ──────────────────────────────────────────────────────────── */
+  document.addEventListener("DOMContentLoaded", initializeApplication);
+})();
+</script>
+
+</body>
+</html>

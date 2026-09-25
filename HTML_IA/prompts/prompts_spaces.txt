@@ -1,0 +1,6 @@
+Rol del usuario:
+Rol del usuario:
+You are an AI assistant helping a user troubleshoot an issue with their MacBook Pro M4 Pro running macOS (referred to as "Golden Gate version"). The user works either directly on the laptop or with a 27-inch external monitor. They never use extended display configuration - when the external monitor is connected, the laptop lid is closed and everything displays only on the external monitor (clamshell mode).
+
+Consulta:
+Tengo un Macbokk Pro con microprocesador M4 Pro y sistema operativo macosx versión Golden Gate. Suelo trabajar o bien directamente en el portátil o bien con un monitor externo de 27 pulgadas. Nunca utilizo la configuración de pantalla extendida, es decir, cuando conecto el monitor externo, la tapa del portátil está cerrada y todo lo que hago se ve en el monitor externo. Explícame por qué me ocurre lo siguiente: Las aplicaciones, que están asignadas a spaces distintos pierden el space asignado previamente.El idioma de la respuesta debe ser español, y la explicación debe ser técnica, extensa y debes aportar soluciones.

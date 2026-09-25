@@ -1,0 +1,1313 @@
+Create a complete, professional, visually sophisticated, and pedagogically structured **editable PowerPoint presentation (.pptx)** about the fundamentals and practical use of **Prompt Engineering**, specifically designed for undergraduate students enrolled in the course **“Automatización y Robotización de la Producción”**, in the **3rd year of the university degree “Gestión, Tecnología y Moda”**.
+
+The presentation must be designed for students who have **no previous knowledge of Prompt Engineering and little or no programming experience**.
+
+The final PowerPoint must function simultaneously as:
+
+1. A complete **student-facing educational presentation**.
+2. A **lecturer teaching resource**.
+3. A practical introductory course on Prompt Engineering.
+4. A collection of realistic examples applied to **fashion, production, logistics, automation, robotics, sustainability, marketing, e-commerce, and technology**.
+5. A classroom-ready teaching pack containing **speaker notes, teaching guidance, activities, discussion questions, exercises, and model solutions**.
+
+There is **no maximum number of slides**. Do not artificially limit the presentation length. Generate as many slides as necessary to explain the subject properly and provide sufficient examples, visual explanations, exercises, and teaching material.
+
+---
+
+# 1. TARGET AUDIENCE
+
+The audience consists of third-year university students studying:
+
+**Degree:** Gestión, Tecnología y Moda
+**Course:** Automatización y Robotización de la Producción
+
+Students:
+
+* Have no previous knowledge of Prompt Engineering.
+* Have little or no programming knowledge.
+* May have limited technical knowledge of Artificial Intelligence.
+* May have little experience with Large Language Models.
+* Are studying fashion, technology, production, automation, and business.
+* Need practical and intuitive explanations rather than technical programming instruction.
+
+Therefore, the presentation must be:
+
+* Introductory.
+* Practical.
+* Visual.
+* Intuitive.
+* Accessible.
+* Non-technical.
+* Closely connected to fashion and its industrial ecosystem.
+
+Do not assume students understand:
+
+* Programming.
+* APIs.
+* Tokens.
+* JSON.
+* Model parameters.
+* Large Language Models.
+* System messages.
+* Developer instructions.
+* Machine learning.
+* Data science.
+
+Whenever one of these concepts is necessary, introduce it gradually, explain it in simple language, and immediately connect it to an understandable example.
+
+---
+
+# 2. MAIN LEARNING OBJECTIVES
+
+By the end of the presentation, students should be able to:
+
+1. Understand what Artificial Intelligence is at a basic conceptual level.
+2. Understand what Generative AI is.
+3. Understand what a prompt is.
+4. Understand what Prompt Engineering means.
+5. Understand why the structure and quality of an instruction can influence an AI response.
+6. Identify the main components of an effective prompt.
+7. Write simple but well-structured prompts.
+8. Distinguish between vague and precise instructions.
+9. Add useful context.
+10. Define a clear objective.
+11. Specify constraints.
+12. Define an appropriate output format.
+13. Ask an AI to adopt a specific role or perspective.
+14. Use examples to guide a response.
+15. Understand the conceptual difference between **System Prompts and User Prompts**.
+16. Create System + User prompt combinations.
+17. Improve prompts iteratively.
+18. Evaluate AI-generated responses critically.
+19. Identify information that should be verified.
+20. Recognise situations where AI may invent, assume, or omit information.
+21. Apply Prompt Engineering to fashion design.
+22. Apply Prompt Engineering to textiles and materials.
+23. Apply Prompt Engineering to production.
+24. Apply Prompt Engineering to logistics and supply-chain management.
+25. Apply Prompt Engineering to inventory and warehousing.
+26. Apply Prompt Engineering to transportation and distribution.
+27. Apply Prompt Engineering to e-commerce and reverse logistics.
+28. Apply Prompt Engineering to sustainability.
+29. Apply Prompt Engineering to automation and robotics.
+30. Apply Prompt Engineering to RFID and traceability.
+31. Critically evaluate whether an AI-generated recommendation is appropriate for a real-world situation.
+
+---
+
+# 3. CENTRAL PEDAGOGICAL MESSAGE
+
+Present Prompt Engineering primarily as a **communication and problem-structuring skill**, not as a programming technique.
+
+The central idea should be:
+
+> **A prompt is not simply a question. It is a way of communicating a task, context, objective, constraints, information, and expected result to an AI system.**
+
+Use the following learning methodology throughout the presentation:
+
+**CONCEPT → SIMPLE EXAMPLE → FASHION EXAMPLE → STUDENT QUESTION → IMPROVED EXAMPLE → PRACTICAL APPLICATION**
+
+Whenever possible, demonstrate:
+
+**POOR PROMPT → IMPROVED PROMPT → WELL-STRUCTURED PROMPT**
+
+Always explain what changed and why.
+
+---
+
+# 4. OVERALL PRESENTATION STRUCTURE
+
+Build the presentation progressively from absolute beginner level.
+
+Use a structure similar to:
+
+1. Title.
+2. Why Prompt Engineering matters.
+3. Learning objectives.
+4. Introduction to Artificial Intelligence.
+5. Generative AI.
+6. Large Language Models.
+7. What is a prompt?
+8. What is Prompt Engineering?
+9. Why prompt quality matters.
+10. Anatomy of a prompt.
+11. Context.
+12. Role.
+13. Objective.
+14. Information.
+15. Constraints.
+16. Output format.
+17. Quality criteria.
+18. Basic rules for good prompts.
+19. Bad vs. good prompts.
+20. Progressive prompt improvement.
+21. System prompts.
+22. User prompts.
+23. System + User prompts.
+24. Iterative prompting.
+25. Fashion design.
+26. Textiles and materials.
+27. Production.
+28. Quality control.
+29. Fashion logistics.
+30. Supply chain.
+31. Inventory.
+32. Warehousing.
+33. Transportation.
+34. E-commerce and omnichannel logistics.
+35. Reverse logistics.
+36. Sustainability.
+37. Automation.
+38. Robotics.
+39. RFID and traceability.
+40. Marketing and e-commerce.
+41. Practical exercises.
+42. Critical evaluation.
+43. Limitations and responsible use.
+44. Integrated fashion-industry challenge.
+45. Final summary.
+
+Add additional slides whenever they improve understanding.
+
+---
+
+# 5. INTRODUCTION TO AI AND GENERATIVE AI
+
+Introduce Artificial Intelligence and Generative AI only to the extent necessary to understand Prompt Engineering.
+
+Explain:
+
+* What AI means in simple terms.
+* What generative AI does.
+* What a Large Language Model is at a basic level.
+* Why these systems respond to natural-language instructions.
+* Why the response is not necessarily guaranteed to be correct.
+
+Avoid unnecessary mathematical or technical explanations.
+
+Use simple fashion-related examples.
+
+---
+
+# 6. WHAT IS A PROMPT?
+
+Start with a simple everyday analogy.
+
+For example:
+
+**“Hazme un vestido.”**
+
+Explain why this instruction is ambiguous.
+
+Progressively add:
+
+* Target customer.
+* Occasion.
+* Style.
+* Material.
+* Colour.
+* Season.
+* Budget.
+* Functional requirements.
+* Desired output.
+
+Use this example to introduce the fundamental principle:
+
+> More useful context can help an AI understand what the user actually needs.
+
+---
+
+# 7. PROMPT ANATOMY
+
+Create a clear visual diagram:
+
+**ROLE + CONTEXT + OBJECTIVE + INFORMATION + CONSTRAINTS + OUTPUT FORMAT + QUALITY CRITERIA**
+
+Explain each component separately.
+
+Make clear that **not every prompt needs every component**.
+
+For every component include:
+
+* Definition.
+* Why it can be useful.
+* When it may be unnecessary.
+* Simple example.
+* Fashion example.
+
+---
+
+# 8. BASIC RULES FOR WRITING GOOD PROMPTS
+
+Create a dedicated section covering:
+
+* Be clear.
+* Be specific.
+* Provide context.
+* Define the objective.
+* Define a role when useful.
+* Identify the target audience.
+* Provide relevant information.
+* Define constraints.
+* Specify the output format.
+* Provide examples when useful.
+* Break complex tasks into smaller tasks.
+* Ask the AI to identify missing information.
+* Avoid unnecessary ambiguity.
+* Iterate.
+* Evaluate.
+* Verify important information.
+
+For each principle, show:
+
+**BAD PROMPT**
+
+→
+
+**BETTER PROMPT**
+
+→
+
+**WHY IT IS BETTER**
+
+---
+
+# 9. SYSTEM PROMPTS VS. USER PROMPTS
+
+Explain visually:
+
+### SYSTEM PROMPT
+
+General instructions defining the AI's role, behaviour, rules, priorities, or constraints.
+
+### USER PROMPT
+
+The specific request or task that the user wants the AI to perform.
+
+Use the analogy:
+
+**SYSTEM = general rules and role**
+
+**USER = specific task**
+
+Keep the explanation conceptual and beginner-friendly.
+
+Do not overwhelm students with API-specific implementation details.
+
+---
+
+# 10. SYSTEM PROMPT EXAMPLES
+
+Include many original System Prompt examples covering:
+
+* Fashion design.
+* Trend analysis.
+* Textiles.
+* Production.
+* Quality control.
+* Logistics.
+* Inventory.
+* Warehousing.
+* Transportation.
+* E-commerce.
+* Sustainability.
+* Automation.
+* Robotics.
+* Marketing.
+
+Example:
+
+> “Actúa como consultor especializado en logística y cadena de suministro del sector de la moda. Utiliza un lenguaje claro y comprensible para estudiantes universitarios. No inventes datos que no hayan sido proporcionados. Cuando falte información relevante, indícalo explícitamente.”
+
+Explain each component.
+
+---
+
+# 11. USER PROMPT EXAMPLES
+
+Include a large number of realistic User Prompt examples.
+
+The examples must cover the complete fashion value chain.
+
+Prioritise examples that demonstrate different Prompt Engineering techniques rather than simply generating many variations of the same request.
+
+---
+
+# 12. FASHION DESIGN PROMPTS
+
+Include prompts for:
+
+* Collection development.
+* Garment concepts.
+* Design variations.
+* Target customers.
+* Moodboards.
+* Colour palettes.
+* Trend interpretation.
+* Product concepts.
+
+Example:
+
+> “Actúa como diseñador especializado en moda contemporánea. Propón cinco conceptos de prendas para una colección de primavera dirigida a consumidores urbanos de entre 25 y 35 años. Para cada concepto indica silueta, materiales, colores, funcionalidad y elemento diferenciador.”
+
+---
+
+# 13. TEXTILES AND MATERIALS PROMPTS
+
+Include examples involving:
+
+* Fabric comparison.
+* Material selection.
+* Sustainability.
+* Technical properties.
+* Alternatives.
+* Cost considerations.
+
+Example:
+
+> “Compara algodón convencional, algodón reciclado y poliéster reciclado para una colección de prendas casual. Organiza la respuesta en una tabla con propiedades, posibles ventajas, limitaciones, aplicaciones y aspectos que deberían verificarse antes de tomar una decisión.”
+
+---
+
+# 14. PRODUCTION PROMPTS
+
+Include prompts for:
+
+* Production planning.
+* Manufacturing processes.
+* Process analysis.
+* Bottleneck identification.
+* Workflow improvement.
+* Production checklists.
+* Documentation.
+
+Example:
+
+> “Analiza el siguiente proceso de fabricación de una camiseta e identifica las etapas en las que podrían aparecer cuellos de botella. Presenta el resultado como una tabla con etapa, posible problema, causa, consecuencia y posible línea de mejora.”
+
+---
+
+# 15. QUALITY CONTROL PROMPTS
+
+Include examples related to:
+
+* Inspection.
+* Defect classification.
+* Quality criteria.
+* Process documentation.
+* Root-cause analysis.
+* Quality-control checklists.
+
+Clarify that AI-generated suggestions do not replace established industrial quality procedures.
+
+---
+
+# 16. DEDICATED FASHION LOGISTICS SECTION
+
+Create a **large, dedicated section on Fashion Logistics**.
+
+Do not treat logistics as a minor example.
+
+Explain the connection:
+
+**FASHION → PRODUCTION → LOGISTICS → DISTRIBUTION → RETAIL / E-COMMERCE → CUSTOMER → RETURNS → CIRCULAR LOGISTICS**
+
+Explain why Prompt Engineering can be useful in logistics:
+
+* Structuring information.
+* Comparing alternatives.
+* Identifying problems.
+* Organising processes.
+* Generating checklists.
+* Analysing scenarios.
+* Preparing reports.
+* Communicating complex processes.
+
+---
+
+# 17. FASHION SUPPLY-CHAIN PROMPTS
+
+Include prompts concerning:
+
+* Suppliers.
+* Raw materials.
+* Production locations.
+* Lead times.
+* Supply-chain risks.
+* Supplier comparison.
+* Disruptions.
+* Multi-sourcing.
+
+Example:
+
+> “Actúa como analista de la cadena de suministro de una empresa de moda. Analiza el escenario proporcionado e identifica los principales riesgos relacionados con proveedores, plazos de entrega, disponibilidad de materiales y transporte. No inventes información que no aparezca en el caso. Presenta los resultados en una tabla.”
+
+---
+
+# 18. INVENTORY MANAGEMENT PROMPTS
+
+Include:
+
+* Excess inventory.
+* Stockouts.
+* Safety stock.
+* Stock rotation.
+* Slow-moving products.
+* Seasonal inventory.
+* Store allocation.
+* Online vs. physical stock.
+
+Example:
+
+> “Analiza un escenario hipotético en el que una empresa de moda presenta exceso de stock de determinadas prendas mientras varias tiendas tienen falta de tallas concretas. Identifica posibles causas y propone alternativas de redistribución del inventario. Presenta ventajas, inconvenientes y riesgos de cada alternativa.”
+
+---
+
+# 19. DEMAND AND SEASONALITY
+
+Include prompts concerning:
+
+* Seasonal collections.
+* Product launches.
+* Sales campaigns.
+* Demand uncertainty.
+* Regional differences.
+* Size demand.
+* Colour demand.
+
+Important teaching point:
+
+Do not imply that an AI-generated forecast is automatically statistically valid.
+
+Explain that appropriate data, statistical methods, and specialised tools may be required for real forecasting.
+
+---
+
+# 20. WAREHOUSE LOGISTICS
+
+Include prompts for:
+
+* Warehouse organisation.
+* Receiving.
+* Picking.
+* Packing.
+* Dispatch.
+* Product location.
+* Warehouse layout.
+* Workforce organisation.
+* Automation opportunities.
+
+Example:
+
+> “Actúa como especialista en logística de almacenes de moda. Analiza el siguiente proceso de preparación de pedidos e identifica posibles cuellos de botella, tareas repetitivas y oportunidades de mejora. Presenta el resultado como una tabla con problema, posible causa, propuesta de mejora y beneficio esperado.”
+
+---
+
+# 21. TRANSPORT AND DISTRIBUTION
+
+Include:
+
+* Transport planning.
+* Distribution centres.
+* Store replenishment.
+* Delivery times.
+* Transportation costs.
+* Shipment consolidation.
+* Regional distribution.
+* International logistics.
+
+Example:
+
+> “Analiza un escenario hipotético de distribución de prendas desde un centro logístico hacia cinco tiendas. Identifica las variables que deberían considerarse para organizar los envíos y propone diferentes criterios de planificación.”
+
+Then demonstrate how adding constraints changes the prompt:
+
+* Delivery deadlines.
+* Vehicle availability.
+* Warehouse capacity.
+* Store demand.
+* Transport costs.
+* Sustainability objectives.
+
+---
+
+# 22. E-COMMERCE AND OMNICHANNEL LOGISTICS
+
+Include:
+
+* Online orders.
+* Click & Collect.
+* Ship-from-store.
+* Omnichannel inventory.
+* Delivery promises.
+* Order consolidation.
+* Returns.
+
+Example:
+
+> “Actúa como consultor especializado en logística omnicanal para empresas de moda. Analiza el escenario proporcionado y propone estrategias para gestionar pedidos procedentes de tiendas físicas y comercio electrónico teniendo en cuenta disponibilidad de stock, ubicación del producto, tiempo de entrega y costes logísticos.”
+
+---
+
+# 23. REVERSE LOGISTICS
+
+Include:
+
+* Returns.
+* Product inspection.
+* Repackaging.
+* Resale.
+* Repair.
+* Recycling.
+* Redistribution.
+
+Example:
+
+> “Analiza el proceso de devolución de una prenda comprada online desde que el cliente inicia la devolución hasta que el producto vuelve a estar disponible para su venta. Identifica etapas, posibles problemas y oportunidades de mejora.”
+
+---
+
+# 24. SUSTAINABLE FASHION LOGISTICS
+
+Include:
+
+* Transport emissions.
+* Shipment consolidation.
+* Packaging reduction.
+* Sustainable transport.
+* Circular logistics.
+* Returns.
+* Recycling.
+* Local vs. international sourcing.
+
+Example:
+
+> “Actúa como especialista en logística sostenible aplicada a la moda. Compara diferentes estrategias para reducir el impacto ambiental asociado al transporte y distribución de prendas. Presenta ventajas, limitaciones, información necesaria y aspectos que deberían verificarse.”
+
+Do not present environmental claims as factual unless supported by appropriate data.
+
+---
+
+# 25. SUPPLIER MANAGEMENT
+
+Include:
+
+* Supplier comparison.
+* Delivery reliability.
+* Cost.
+* Capacity.
+* Flexibility.
+* Lead time.
+* Sustainability criteria.
+
+Example:
+
+> “Crea una tabla para comparar tres proveedores hipotéticos de tejido considerando precio, plazo de entrega, capacidad de producción, distancia, flexibilidad y criterios de sostenibilidad. No inventes valores: utiliza únicamente los datos proporcionados.”
+
+---
+
+# 26. LOGISTICS RISK MANAGEMENT
+
+Include:
+
+* Delays.
+* Supplier disruption.
+* Transport problems.
+* Stockouts.
+* Excess inventory.
+* Demand changes.
+* Customs delays.
+* Production interruptions.
+
+Example:
+
+> “Actúa como analista de riesgos de la cadena de suministro de una empresa de moda. A partir de la información proporcionada, identifica los principales riesgos logísticos, explica sus posibles consecuencias y propone medidas de mitigación. Indica explícitamente qué información adicional sería necesaria.”
+
+---
+
+# 27. AUTOMATION IN FASHION LOGISTICS
+
+Connect logistics directly to the course.
+
+Include:
+
+* Automated warehouses.
+* Automated storage and retrieval.
+* Conveyor systems.
+* Automated sorting.
+* Picking.
+* Inventory counting.
+* RFID.
+* Computer vision.
+* Warehouse Management Systems.
+* Human-machine collaboration.
+
+Example:
+
+> “Explica cómo podría utilizarse la automatización en un almacén de distribución de una empresa de moda. Identifica cinco tareas susceptibles de automatización y, para cada una, explica el posible beneficio, una limitación y qué información sería necesaria para evaluar su viabilidad.”
+
+---
+
+# 28. ROBOTICS IN FASHION LOGISTICS
+
+Include:
+
+* Autonomous mobile robots.
+* Robotic picking.
+* Automated sorting.
+* Internal transport.
+* Packaging.
+* Human-robot collaboration.
+
+Example:
+
+> “Analiza un almacén hipotético de una empresa de moda y determina qué operaciones podrían ser candidatas a robotización. Para cada operación indica objetivo, posible tecnología, beneficio esperado, limitaciones y factores que deberían evaluarse antes de implantarla.”
+
+Clearly state that these are educational scenarios and not engineering specifications.
+
+---
+
+# 29. RFID AND TRACEABILITY
+
+Introduce RFID and traceability at a beginner level.
+
+Example:
+
+> “Explica a estudiantes de Gestión, Tecnología y Moda cómo RFID puede contribuir a mejorar la trazabilidad de prendas desde la recepción en un almacén hasta su venta en una tienda. Utiliza un ejemplo sencillo y termina con un diagrama del proceso.”
+
+Include additional examples involving:
+
+* Inventory visibility.
+* Product tracking.
+* Warehouse operations.
+* Loss prevention.
+* Omnichannel inventory.
+
+---
+
+# 30. MARKETING AND E-COMMERCE
+
+Include prompts for:
+
+* Product descriptions.
+* Customer personas.
+* Campaign concepts.
+* E-commerce content.
+* Product categorisation.
+* Customer communication.
+
+Connect marketing examples to production and logistics when relevant.
+
+---
+
+# 31. PROGRESSIVE PROMPT IMPROVEMENT
+
+Include numerous before/after examples.
+
+### VERSION 1 — VAGUE
+
+> “Mejora la logística de esta empresa de moda.”
+
+### VERSION 2 — BETTER
+
+> “Analiza el proceso logístico de una empresa de moda que distribuye prendas desde un almacén central a tiendas físicas y clientes online. Identifica posibles ineficiencias.”
+
+### VERSION 3 — WELL STRUCTURED
+
+> “Actúa como consultor especializado en logística omnicanal para empresas de moda. Analiza el escenario proporcionado y detecta posibles ineficiencias relacionadas con inventario, preparación de pedidos, distribución, transporte y devoluciones. No inventes datos que no aparezcan en el caso. Presenta los resultados en una tabla con las columnas: problema, posible causa, propuesta de mejora, beneficio esperado, información adicional necesaria y riesgo. Finaliza con cinco preguntas que deberían responderse antes de implementar cualquier cambio.”
+
+Explain every improvement.
+
+Create similar progression examples for:
+
+* Fashion design.
+* Production.
+* Inventory.
+* Warehousing.
+* Transportation.
+* Automation.
+* Robotics.
+* Sustainability.
+
+---
+
+# 32. SYSTEM + USER LOGISTICS EXAMPLES
+
+Include complete combinations.
+
+### SYSTEM PROMPT
+
+> “Actúa como un consultor especializado en logística y cadena de suministro del sector de la moda. Utiliza un lenguaje claro y comprensible para estudiantes universitarios. No inventes datos que no hayan sido proporcionados. Cuando falte información relevante, indícalo explícitamente.”
+
+### USER PROMPT
+
+> “Analiza el siguiente caso de distribución de prendas entre un centro logístico y varias tiendas. Identifica posibles problemas de stock, transporte y tiempos de entrega. Presenta las conclusiones en una tabla y termina con cinco preguntas que deberían responderse antes de tomar una decisión.”
+
+Include several additional System + User combinations.
+
+---
+
+# 33. ITERATIVE PROMPTING
+
+Teach the cycle:
+
+**PROMPT → RESPONSE → EVALUATION → REFINEMENT → NEW RESPONSE**
+
+Demonstrate the cycle with fashion examples.
+
+For example:
+
+1. Request a logistics analysis.
+2. Examine the response.
+3. Identify missing information.
+4. Improve the prompt.
+5. Request a better structured response.
+6. Compare the results.
+
+---
+
+# 34. CLASSROOM EXERCISES
+
+Include many exercises.
+
+At minimum:
+
+### Exercise 1 — Improve a vague prompt
+
+### Exercise 2 — Add context
+
+### Exercise 3 — Define the output format
+
+### Exercise 4 — Create a System Prompt
+
+### Exercise 5 — Create a User Prompt
+
+### Exercise 6 — Build System + User
+
+### Exercise 7 — Improve a logistics prompt
+
+### Exercise 8 — Create an inventory-analysis prompt
+
+### Exercise 9 — Create a warehouse-analysis prompt
+
+### Exercise 10 — Create a transportation-analysis prompt
+
+### Exercise 11 — Create an automation-analysis prompt
+
+### Exercise 12 — Create a robotics-analysis prompt
+
+### Exercise 13 — Evaluate an AI response critically
+
+### Exercise 14 — Create a complete prompt for a fashion logistics scenario
+
+For every exercise provide teacher-only information in the speaker notes:
+
+* Objective.
+* Instructions.
+* Suggested duration.
+* Questions.
+* Expected learning outcome.
+* Common mistakes.
+* Suggested solution.
+* Discussion points.
+
+---
+
+# 35. FINAL INTEGRATED FASHION LOGISTICS CHALLENGE
+
+Create a realistic hypothetical case.
+
+A fashion company has:
+
+* One central warehouse.
+* Several physical stores.
+* An online shop.
+* Seasonal collections.
+* Limited warehouse capacity.
+* Increasing online returns.
+* Occasional stockouts.
+* Excess inventory for some products.
+* Increasing transportation costs.
+
+Ask students to design a complete prompt that asks an AI system to analyse the situation.
+
+The students should determine which elements to include:
+
+* Role.
+* Context.
+* Objective.
+* Available information.
+* Constraints.
+* Questions.
+* Output format.
+* Quality criteria.
+* Instructions not to invent missing data.
+
+Do not reveal the complete solution on the student-facing slide.
+
+Place a model solution and detailed teaching guidance in the speaker notes.
+
+---
+
+# 36. CRITICAL EVALUATION OF AI RESPONSES
+
+Create slides where students receive an AI-generated response and must identify:
+
+* Unsupported assumptions.
+* Missing information.
+* Potential errors.
+* Ambiguity.
+* Unverified claims.
+* Data that should be requested.
+* Conclusions that should not be accepted automatically.
+
+Use fashion and logistics scenarios.
+
+Teach students that:
+
+> A well-written prompt does not guarantee a correct answer.
+
+---
+
+# 37. LIMITATIONS AND RESPONSIBLE USE
+
+Explain:
+
+* AI can make mistakes.
+* AI can generate plausible but incorrect information.
+* AI can misunderstand ambiguous instructions.
+* AI can make unsupported assumptions.
+* AI can omit relevant factors.
+* Data quality matters.
+* Important claims should be verified.
+* Confidential information requires caution.
+* AI should support human decision-making, not replace it.
+
+Discuss practical considerations involving:
+
+* Personal data.
+* Company information.
+* Confidential information.
+* Intellectual property.
+* Commercial information.
+* Verification.
+* Human responsibility.
+
+---
+
+# 38. CONNECTION WITH AUTOMATION AND ROBOTISATION
+
+Explicitly connect Prompt Engineering with the subject **“Automatización y Robotización de la Producción”**.
+
+Explain that Prompt Engineering can help students:
+
+* Understand complex technical processes.
+* Document processes.
+* Compare automation alternatives.
+* Identify repetitive tasks.
+* Generate checklists.
+* Structure requirements.
+* Analyse hypothetical scenarios.
+* Prepare questions for technical experts.
+* Communicate technical information to non-technical audiences.
+
+Make clear that AI prompting does not replace:
+
+* Industrial engineering.
+* Professional engineering validation.
+* Simulation software.
+* Production planning systems.
+* Logistics optimisation software.
+* Warehouse Management Systems.
+* Statistical forecasting.
+* Human expertise.
+
+---
+
+# 39. VISUAL CONTENT
+
+The presentation must not consist primarily of text.
+
+Use:
+
+* Diagrams.
+* Flowcharts.
+* Before/after comparisons.
+* Tables.
+* Infographics.
+* Prompt anatomy diagrams.
+* Decision trees.
+* Process maps.
+* Conceptual illustrations.
+* Structured prompt cards.
+* Workflow diagrams.
+
+Include a recurring visual:
+
+**PROMPT → AI → RESPONSE → EVALUATION → REFINEMENT**
+
+Also include a fashion value-chain diagram:
+
+**MATERIALS → PRODUCTION → WAREHOUSE → DISTRIBUTION → RETAIL / E-COMMERCE → CUSTOMER → RETURNS → CIRCULAR LOGISTICS**
+
+Indicate visually where Prompt Engineering may support each stage.
+
+---
+
+# 40. PRESENTATION DESIGN
+
+Create a visual identity combining:
+
+**FASHION + TECHNOLOGY + AI + AUTOMATION + LOGISTICS**
+
+The aesthetic should be:
+
+* Modern.
+* Elegant.
+* Academic.
+* Sophisticated.
+* Minimal.
+* Professional.
+* Appropriate for university students.
+
+Use predominantly:
+
+* Very light backgrounds.
+* White.
+* Light blue.
+* Medium blue.
+* Dark blue.
+* Subtle neutral colours.
+
+Avoid:
+
+* Excessive saturation.
+* Excessive gradients.
+* Visual clutter.
+* Childish graphics.
+* Unnecessary decoration.
+* Overly corporate aesthetics.
+
+Use fashion and technology references subtly.
+
+---
+
+# 41. TYPOGRAPHY AND READABILITY
+
+Use a modern sans-serif font such as:
+
+**Aptos, Calibri, Arial, or equivalent.**
+
+Maintain:
+
+* Large titles.
+* Clear hierarchy.
+* Comfortable body text.
+* Generous whitespace.
+* Short paragraphs.
+* Concise bullet points.
+
+Never reduce the font size excessively to fit content.
+
+If additional information is required, create another slide or move the explanation into speaker notes.
+
+---
+
+# 42. SPEAKER NOTES — MANDATORY
+
+Every substantive slide must contain useful speaker notes.
+
+Speaker notes must **not simply repeat the visible slide content**.
+
+They should provide the lecturer with genuine teaching material.
+
+Where appropriate, use:
+
+**Objetivo de la diapositiva:**
+...
+
+**Mensaje clave:**
+...
+
+**Explicación para el profesor:**
+...
+
+**Ejemplo para explicar en clase:**
+...
+
+**Pregunta para los alumnos:**
+...
+
+**Posible dificultad o error conceptual:**
+...
+
+**Actividad / interacción:**
+...
+
+**Consejo docente:**
+...
+
+**Tiempo recomendado:**
+...
+
+**Transición a la siguiente diapositiva:**
+...
+
+Do not force every field onto every slide. Use only the elements that provide pedagogical value.
+
+---
+
+# 43. TEACHING GUIDANCE
+
+For important concepts and exercises, include explicit teaching guidance.
+
+Provide:
+
+* Suggested explanations.
+* Classroom questions.
+* Mini-demonstrations.
+* Discussion prompts.
+* Student participation.
+* Common misconceptions.
+* Suggested timing.
+* Suggested transitions.
+* Alternative examples.
+* Expected answers.
+* Model solutions.
+
+Teacher-only information must remain in the speaker notes.
+
+The student-facing slides must remain clean and readable.
+
+---
+
+# 44. INTERACTIVE MOMENTS
+
+Introduce regular moments of participation.
+
+Use questions such as:
+
+* “¿Qué información falta?”
+* “¿Qué cambiarías?”
+* “¿Qué podría salir mal?”
+* “¿Qué debería verificar el usuario?”
+* “¿Qué restricciones añadirías?”
+* “¿Qué variables debería conocer la IA?”
+* “¿Qué diferencia existe entre estos dos prompts?”
+* “¿Qué respuesta esperarías?”
+* “¿Qué información NO debería inventar el modelo?”
+
+Include these questions in the speaker notes and, when useful, on the visible slide.
+
+---
+
+# 45. FINAL INTEGRATED CHALLENGE
+
+Finish with a comprehensive challenge combining several concepts.
+
+Students must create a complete prompt for a realistic fashion-industry problem involving at least two of:
+
+* Production.
+* Logistics.
+* Automation.
+* Robotics.
+* Sustainability.
+* Inventory.
+* E-commerce.
+
+The prompt should use:
+
+**ROLE + CONTEXT + OBJECTIVE + INFORMATION + CONSTRAINTS + OUTPUT FORMAT + QUALITY CRITERIA**
+
+Include a model solution and detailed teaching guidance in the speaker notes.
+
+---
+
+# 46. FINAL SUMMARY
+
+Finish with a concise visual summary.
+
+Reinforce:
+
+> **Good Prompt Engineering is not about finding a magical phrase. It is about communicating a problem clearly, providing useful context, defining the desired result, evaluating the response, and improving the interaction iteratively.**
+
+Connect the concept directly to:
+
+**FASHION + PRODUCTION + LOGISTICS + AUTOMATION + ROBOTICS + SUSTAINABILITY + TECHNOLOGY**
+
+---
+
+# 47. LANGUAGE REQUIREMENTS — ABSOLUTE
+
+**EVERYTHING MUST BE IN SPANISH (es-ES).**
+
+This includes:
+
+* Slides.
+* Titles.
+* Subtitles.
+* Body text.
+* Examples.
+* Tables.
+* Diagrams.
+* Captions.
+* Exercises.
+* Questions.
+* Speaker notes.
+* Teaching guidance.
+* Metadata.
+* System prompts.
+* User prompts.
+* Model solutions.
+* Teacher instructions.
+
+Do not mix Spanish and English unnecessarily.
+
+Technical terms may include the English equivalent in parentheses when genuinely useful, for example:
+
+**Ingeniería de prompts (Prompt Engineering)**
+
+After introducing the term, use Spanish consistently.
+
+---
+
+# 48. EDUCATIONAL AND TECHNICAL ACCURACY
+
+Do not present AI capabilities as guaranteed.
+
+Clearly distinguish between:
+
+* What the prompt explicitly asks for.
+* What the AI may generate.
+* What is supported by supplied information.
+* What is an inference.
+* What requires external verification.
+* What requires specialised software.
+* What requires professional expertise.
+
+Do not imply that an AI-generated logistics, production, automation, or robotics recommendation is automatically optimal, technically feasible, statistically valid, or safe.
+
+Present Prompt Engineering as a **support tool for analysis, communication, ideation, documentation, and decision support**, not as a replacement for professional systems or human judgement.
+
+---
+
+# 49. FINAL TECHNICAL QUALITY CONTROL
+
+Before producing the final PowerPoint, verify:
+
+## Content
+
+* Beginner level.
+* No programming knowledge assumed.
+* Progressive learning sequence.
+* Prompt Engineering clearly explained.
+* System and User prompts differentiated.
+* Many practical examples.
+* Extensive fashion examples.
+* Extensive production examples.
+* **Extensive fashion logistics examples.**
+* Supply-chain examples.
+* Inventory examples.
+* Warehouse examples.
+* Transportation examples.
+* E-commerce examples.
+* Reverse-logistics examples.
+* Sustainability examples.
+* Automation examples.
+* Robotics examples.
+* RFID examples.
+* Exercises.
+* Critical-thinking activities.
+* Final integrated challenge.
+
+## Pedagogy
+
+* Simple-to-complex progression.
+* One main idea per slide where possible.
+* Examples accompany important concepts.
+* Interactive questions are included.
+* Exercises contain teaching guidance.
+* Speaker notes add value instead of duplicating slide text.
+* Major sections contain teaching guidance.
+* Approximate teaching times are provided where appropriate.
+
+## Visual design
+
+* Elegant.
+* Modern.
+* Academic.
+* Readable.
+* Light tones.
+* Predominantly blue.
+* Consistent layouts.
+* Appropriate whitespace.
+* Visual elements have pedagogical value.
+* Fashion and technology are subtly integrated.
+
+## Language
+
+* Entire presentation in **Spanish (es-ES)**.
+* Correct Spanish grammar.
+* Consistent terminology.
+* No accidental English text.
+
+## PowerPoint quality
+
+* Fully editable.
+* Editable tables.
+* Editable diagrams whenever possible.
+* Selectable/editable text.
+* Speaker notes actually embedded in the PowerPoint.
+* No text overlaps.
+* No clipped elements.
+* No objects outside slide boundaries.
+* No unreadably small text.
+* Consistent spacing and alignment.
+* Consistent visual hierarchy.
+
+---
+
+# 50. FINAL OUTPUT
+
+Generate the **actual editable PowerPoint presentation (.pptx)**.
+
+Do not provide merely:
+
+* An outline.
+* A list of slide titles.
+* A text-only presentation plan.
+* A theoretical description of what the presentation could contain.
+
+Generate the complete presentation containing:
+
+**SLIDES + VISUAL ELEMENTS + FASHION EXAMPLES + LOGISTICS EXAMPLES + SYSTEM PROMPTS + USER PROMPTS + EXERCISES + SPEAKER NOTES + TEACHING GUIDANCE + MODEL SOLUTIONS**
+
+The final presentation should function as a **complete introductory university lesson and lecturer teaching pack on Prompt Engineering applied to the fashion industry**.
+
+It must provide particularly strong coverage of:
+
+**Fashion Design
+
+* Textiles
+* Production
+* Quality Control
+* Logistics
+* Supply Chain
+* Inventory
+* Warehousing
+* Transportation
+* E-commerce
+* Reverse Logistics
+* Sustainability
+* Automation
+* Robotics
+* RFID
+* Traceability
+* Artificial Intelligence
+* Prompt Engineering**
+
+The ultimate learning outcome is that a student with **no programming experience** can independently:
+
+**UNDERSTAND → WRITE → ANALYSE → IMPROVE → TEST → EVALUATE**
+
+prompts for realistic problems throughout the fashion, production, logistics, automation, and technology ecosystem.
